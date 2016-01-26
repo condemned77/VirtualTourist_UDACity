@@ -15,6 +15,7 @@
 		09D829A21C553406009C77D7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 09D829A01C553406009C77D7 /* LaunchScreen.storyboard */; };
 		09D829AE1C5542F2009C77D7 /* CoreDataStackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D829AD1C5542F2009C77D7 /* CoreDataStackManager.swift */; };
 		09D829B01C56B13C009C77D7 /* LongTouchGestrureRecogniser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D829AF1C56B13C009C77D7 /* LongTouchGestrureRecogniser.swift */; };
+		09D829B21C57E66C009C77D7 /* Pin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D829B11C57E66C009C77D7 /* Pin.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		09D829A31C553406009C77D7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		09D829AD1C5542F2009C77D7 /* CoreDataStackManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataStackManager.swift; sourceTree = "<group>"; };
 		09D829AF1C56B13C009C77D7 /* LongTouchGestrureRecogniser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LongTouchGestrureRecogniser.swift; sourceTree = "<group>"; };
+		09D829B11C57E66C009C77D7 /* Pin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pin.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +79,7 @@
 			children = (
 				09D829AD1C5542F2009C77D7 /* CoreDataStackManager.swift */,
 				09D829AF1C56B13C009C77D7 /* LongTouchGestrureRecogniser.swift */,
+				09D829B11C57E66C009C77D7 /* Pin.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -154,6 +157,7 @@
 				09D829971C553406009C77D7 /* TravelLocationsViewController.swift in Sources */,
 				09D829AE1C5542F2009C77D7 /* CoreDataStackManager.swift in Sources */,
 				09D829951C553406009C77D7 /* AppDelegate.swift in Sources */,
+				09D829B21C57E66C009C77D7 /* Pin.swift in Sources */,
 				09D8299D1C553406009C77D7 /* VirtualTourist.xcdatamodeld in Sources */,
 				09D829B01C56B13C009C77D7 /* LongTouchGestrureRecogniser.swift in Sources */,
 			);

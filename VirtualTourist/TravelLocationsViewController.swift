@@ -8,17 +8,16 @@
 
 import UIKit
 import MapKit
+
 class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
 
     @IBOutlet weak var mapView: MKMapView!
-    var longPressGestureRecogniser : UILongPressGestureRecognizer!
+    
+    var lastPinSetToMap : MKAnnotation?
+    var animateFallingPin : Bool = true
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        self.longPressGestureRecogniser = UILongPressGestureRecognizer(target: self, action: "addNewPinToMap")
-        longPressGestureRecogniser.minimumPressDuration = 2
-//        longPressGestureRecogniser.numberOfTapsRequired = 1
-        self.view.addGestureRecognizer(longPressGestureRecogniser)
     }
 
     override func didReceiveMemoryWarning() {
@@ -27,20 +26,25 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
     }
 
     
-    func addNewPinToMap() {
-        print("Add pin detected")
-        switch self.longPressGestureRecogniser.state {
+    @IBAction func longPressOnMapViewDetected(sender: UILongPressGestureRecognizer) {
+        let touchLocation = sender.locationInView(self.mapView)
+        let locationCoordinate : CLLocationCoordinate2D = self.mapView.convertPoint(touchLocation, toCoordinateFromView: self.mapView)
+        switch sender.state {
         case .Began:
             print("State began")
+            addPinToMap(forCoordinate: locationCoordinate, withFallAnimation: true)
             break;
         case .Ended:
             print("State ended")
+            self.lastPinSetToMap = nil
+            //TODO: start prefetching of photos here!
             break
         case .Cancelled:
             print("state canceled")
             break
         case .Changed:
             print("state: changed")
+            self.movePin(locationCoordinate)
             break
         case .Failed:
             print("state: failed")
@@ -49,13 +53,44 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
             print("state: possible")
             break
         }
-//        self.mapView.p
-//        self.mapView.addAnnotation(MKPlacemark(placemark: <#T##CLPlacemark#>))
+
     }
+    func addPinToMap(forCoordinate coordinate : CLLocationCoordinate2D, withFallAnimation animation : Bool) {
+        print("Add pin detected")
+        self.animateFallingPin = animation
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = coordinate
+        self.mapView.addAnnotation(annotation)
+        self.lastPinSetToMap = annotation
+    }
+    
+    func mapView(mapView: MKMapView, didAddAnnotationViews views: [MKAnnotationView]) {
+        print("mapView: didAddAnnotationViews: called. views: \(views.count)")
+        if self.animateFallingPin == false {return}
+        for annView : MKAnnotationView in views {
+            let endFrame : CGRect  = annView.frame;
+            annView.frame = CGRectOffset(endFrame, 0, -500);
+            UIView.animateWithDuration(0.5, animations: {
+                annView.frame = endFrame
+            })
+        }
+    }
+    
+    func movePin(toCoordinate : CLLocationCoordinate2D) {
+        self.removeLastPinOnMap()
+        self.addPinToMap(forCoordinate: toCoordinate, withFallAnimation: false)
+    }
+    
+    func removeLastPinOnMap() {
+        if let lastPin = self.lastPinSetToMap {
+            self.mapView.removeAnnotation(lastPin)
+        }
+    }
+    
     /*Callback method of the MKMapViewDelegate protocol.
     Here, the visual appearence of the map pins is set.*/
     func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
-        
+        print("mapView viewForAnnotation called")
         let reuseId = "pin"
         var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId) as? MKPinAnnotationView
         if pinView == nil {
