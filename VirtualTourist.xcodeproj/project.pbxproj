@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		094206DA1C5A98D9008AFBC9 /* MapLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094206D91C5A98D9008AFBC9 /* MapLocation.swift */; };
+		094206DC1C5E69DE008AFBC9 /* MapViewInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094206DB1C5E69DE008AFBC9 /* MapViewInterface.swift */; };
 		09D829951C553406009C77D7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D829941C553406009C77D7 /* AppDelegate.swift */; };
 		09D829971C553406009C77D7 /* TravelLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D829961C553406009C77D7 /* TravelLocationsViewController.swift */; };
 		09D8299A1C553406009C77D7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 09D829981C553406009C77D7 /* Main.storyboard */; };
@@ -20,6 +21,7 @@
 
 /* Begin PBXFileReference section */
 		094206D91C5A98D9008AFBC9 /* MapLocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapLocation.swift; sourceTree = "<group>"; };
+		094206DB1C5E69DE008AFBC9 /* MapViewInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewInterface.swift; sourceTree = "<group>"; };
 		09D829911C553406009C77D7 /* VirtualTourist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VirtualTourist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		09D829941C553406009C77D7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		09D829961C553406009C77D7 /* TravelLocationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelLocationsViewController.swift; sourceTree = "<group>"; };
@@ -80,6 +82,7 @@
 				094206D91C5A98D9008AFBC9 /* MapLocation.swift */,
 				09D829AD1C5542F2009C77D7 /* CoreDataStackManager.swift */,
 				09D829B11C57E66C009C77D7 /* Pin.swift */,
+				094206DB1C5E69DE008AFBC9 /* MapViewInterface.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -154,6 +157,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				094206DC1C5E69DE008AFBC9 /* MapViewInterface.swift in Sources */,
 				09D829971C553406009C77D7 /* TravelLocationsViewController.swift in Sources */,
 				09D829AE1C5542F2009C77D7 /* CoreDataStackManager.swift in Sources */,
 				094206DA1C5A98D9008AFBC9 /* MapLocation.swift in Sources */,
