@@ -27,17 +27,17 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         // Do any additional setup after loading the view, typically from a nib.
         let req : NSFetchRequest = NSFetchRequest(entityName: "MapLocation")
         do {
-            let locations : [MapLocation]? = try sharedContext.executeFetchRequest(req) as! [MapLocation]
-            if locations?.count == 1 {
-                print("one location found: \(locations)")
-                self.currentMapLocation = locations![0]
-            } else if locations?.count > 1 {
-                print("unexpected map location count > 1: \(locations?.count)")
-                print(locations)
-            } else {
-                print("No previous location stored. Locations: \(locations?.count)")
+            if let locations : [MapLocation] = try sharedContext.executeFetchRequest(req) as? [MapLocation] {
+                if locations.count == 1 {
+                    print("one location found: \(locations)")
+                    self.currentMapLocation = locations[0]
+                } else if locations.count > 1 {
+                    print("unexpected map location count > 1: \(locations.count)")
+                    print(locations)
+                } else {
+                    print("No previous location stored. Locations: \(locations.count)")
+                }
             }
-            
         } catch let error {
             print("error while fetching map location \(error)")
             self.currentMapLocation = nil
