@@ -10,9 +10,9 @@ import Foundation
 import MapKit
 import CoreData
 
-class MapViewInterface : NSObject, MKMapViewDelegate {
+class MapViewInterface : NSObject {
     var lastPinSetToMap : MKAnnotation?
-    var animateFallingPin : Bool = true
+
     lazy var sharedContext = { CoreDataStackManager.sharedInstance().managedObjectContext}()
     weak var mapView : MKMapView!
     var currentMapLocation : MapLocation!
@@ -20,7 +20,6 @@ class MapViewInterface : NSObject, MKMapViewDelegate {
     init(withMapView mapView : MKMapView) {
         super.init()
         self.mapView            = mapView
-        self.mapView.delegate   = self
     }
     
     func centerMapToCurrentLocation() {
@@ -79,52 +78,24 @@ class MapViewInterface : NSObject, MKMapViewDelegate {
 
 
     //MARK: Manipulate map
-    func addPinToMap(forCoordinate coordinate : CLLocationCoordinate2D, withFallAnimation animation : Bool) {
+    func addPinToMap(forCoordinate coordinate : CLLocationCoordinate2D) {
         print("Add pin to: \(coordinate)")
-        self.animateFallingPin = animation
         let annotation = MKPointAnnotation()
+        annotation.title = "dropped pin"
         annotation.coordinate = coordinate
         self.mapView.addAnnotation(annotation)
         self.lastPinSetToMap = annotation
     }
 
     
-    func mapView(mapView: MKMapView, didAddAnnotationViews views: [MKAnnotationView]) {
-        print("mapView: didAddAnnotationViews: called. views: \(views.count)")
-        if self.animateFallingPin == false {return}
-        for annView : MKAnnotationView in views {
-            let endFrame : CGRect  = annView.frame;
-            annView.frame = CGRectOffset(endFrame, 0, -500);
-            UIView.animateWithDuration(0.5, animations: {
-                annView.frame = endFrame
-            })
-        }
-    }
-    
     func movePin(toCoordinate : CLLocationCoordinate2D) {
         self.removeLastPinOnMap()
-        self.addPinToMap(forCoordinate: toCoordinate, withFallAnimation: false)
+        self.addPinToMap(forCoordinate: toCoordinate)
     }
     
     func removeLastPinOnMap() {
         if let lastPin = self.lastPinSetToMap {
             self.mapView.removeAnnotation(lastPin)
         }
-    }
-    
-    /*Callback method of the MKMapViewDelegate protocol.
-    Here, the visual appearence of the map pins is set.*/
-    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
-        print("mapView viewForAnnotation called")
-        let reuseId = "pin"
-        var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId) as? MKPinAnnotationView
-        if pinView == nil {
-            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-            pinView!.pinTintColor = UIColor.redColor()
-        }
-        else {
-            pinView!.annotation = annotation
-        }
-        return pinView
     }
 }
