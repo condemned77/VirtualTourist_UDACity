@@ -80,10 +80,10 @@
             </objects>
             <point key="canvasLocation" x="870" y="659"/>
         </scene>
-        <!--View Controller-->
+        <!--Photo Album View Controller-->
         <scene sceneID="t5w-61-n9l">
             <objects>
-                <viewController id="jvk-W8-iGa" sceneMemberID="viewController">
+                <viewController id="jvk-W8-iGa" customClass="PhotoAlbumViewController" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="0HC-5e-F1e"/>
                         <viewControllerLayoutGuide type="bottom" id="nau-dP-ViS"/>
@@ -92,25 +92,20 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jhe-Mg-PAy">
-                                <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
-                                <items>
-                                    <navigationItem title="Title" id="qS7-E5-7Oa"/>
-                                </items>
-                            </navigationBar>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="aQz-Js-k3x">
                                 <rect key="frame" x="0.0" y="44" width="600" height="120"/>
                             </mapView>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="2cX-gB-exT">
-                                <rect key="frame" x="0.0" y="164" width="600" height="0.0"/>
-                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="Wcc-L0-XiM">
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Q50-5S-FBR">
+                                <rect key="frame" x="0.0" y="164" width="600" height="392"/>
+                                <color key="backgroundColor" red="0.0" green="0.66090106959999995" blue="0.99482482670000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="cdL-a1-klO">
                                     <size key="itemSize" width="50" height="50"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="eiz-Ks-5Q2">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="Ngh-tH-wrk">
                                         <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
@@ -121,29 +116,47 @@
                                     </collectionViewCell>
                                 </cells>
                             </collectionView>
-                            <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="STO-QI-kYm">
+                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QRb-dQ-cNX" userLabel="BottomToolbar">
                                 <rect key="frame" x="0.0" y="556" width="600" height="44"/>
                                 <items>
-                                    <navigationItem title="Title" id="bxL-aA-Gha"/>
+                                    <barButtonItem style="plain" systemItem="flexibleSpace" id="sYT-Xc-Jnk"/>
+                                    <barButtonItem title="New Collection" id="PRw-3P-bhZ">
+                                        <connections>
+                                            <action selector="newCollectionPressed:" destination="jvk-W8-iGa" id="NMn-UB-dyQ"/>
+                                        </connections>
+                                    </barButtonItem>
+                                    <barButtonItem style="plain" systemItem="flexibleSpace" id="8WZ-I7-zvp"/>
+                                </items>
+                            </toolbar>
+                            <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ggx-eI-LWJ">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
+                                <items>
+                                    <navigationItem id="HY2-LG-nm4">
+                                        <barButtonItem key="leftBarButtonItem" title="OK" style="plain" id="lXE-PX-tld">
+                                            <connections>
+                                                <action selector="okButtonPressed:" destination="jvk-W8-iGa" id="AfE-2d-FiW"/>
+                                            </connections>
+                                        </barButtonItem>
+                                    </navigationItem>
                                 </items>
                             </navigationBar>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="2cX-gB-exT" firstAttribute="top" secondItem="aQz-Js-k3x" secondAttribute="bottom" id="05f-Om-E2W"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="STO-QI-kYm" secondAttribute="trailing" constant="-20" id="1IZ-Mj-XSU"/>
-                            <constraint firstItem="nau-dP-ViS" firstAttribute="top" secondItem="STO-QI-kYm" secondAttribute="bottom" id="2ht-K8-32P"/>
-                            <constraint firstItem="STO-QI-kYm" firstAttribute="height" secondItem="jhe-Mg-PAy" secondAttribute="height" id="3Uh-Kd-AJx"/>
                             <constraint firstItem="aQz-Js-k3x" firstAttribute="height" secondItem="gSi-Gc-KID" secondAttribute="height" multiplier="0.2" id="4CJ-kK-oPF"/>
+                            <constraint firstItem="aQz-Js-k3x" firstAttribute="top" secondItem="ggx-eI-LWJ" secondAttribute="bottom" id="54o-hk-z5a"/>
                             <constraint firstAttribute="trailingMargin" secondItem="aQz-Js-k3x" secondAttribute="trailing" constant="-20" id="5xl-We-yVb"/>
-                            <constraint firstItem="2cX-gB-exT" firstAttribute="leading" secondItem="gSi-Gc-KID" secondAttribute="leadingMargin" constant="-20" id="Dne-WE-yIO"/>
-                            <constraint firstItem="aQz-Js-k3x" firstAttribute="top" secondItem="jhe-Mg-PAy" secondAttribute="bottom" id="dy2-1p-daR"/>
+                            <constraint firstItem="ggx-eI-LWJ" firstAttribute="top" secondItem="gSi-Gc-KID" secondAttribute="topMargin" id="7sF-GB-pah"/>
+                            <constraint firstItem="Q50-5S-FBR" firstAttribute="top" secondItem="aQz-Js-k3x" secondAttribute="bottom" id="E5q-M8-k4c"/>
+                            <constraint firstItem="Q50-5S-FBR" firstAttribute="leading" secondItem="gSi-Gc-KID" secondAttribute="leadingMargin" constant="-20" id="LMe-xt-Z21"/>
+                            <constraint firstItem="ggx-eI-LWJ" firstAttribute="leading" secondItem="gSi-Gc-KID" secondAttribute="leadingMargin" constant="-20" id="ZJM-bO-bEy"/>
+                            <constraint firstItem="nau-dP-ViS" firstAttribute="top" secondItem="QRb-dQ-cNX" secondAttribute="bottom" id="f7c-f7-lQh"/>
+                            <constraint firstItem="QRb-dQ-cNX" firstAttribute="leading" secondItem="gSi-Gc-KID" secondAttribute="leadingMargin" constant="-20" id="gXH-4u-Xms"/>
+                            <constraint firstItem="QRb-dQ-cNX" firstAttribute="top" secondItem="Q50-5S-FBR" secondAttribute="bottom" id="haH-Gc-Dva"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="ggx-eI-LWJ" secondAttribute="trailing" constant="-20" id="iYz-pq-CMZ"/>
                             <constraint firstItem="aQz-Js-k3x" firstAttribute="leading" secondItem="gSi-Gc-KID" secondAttribute="leadingMargin" constant="-20" id="o3u-9a-Fmr"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="jhe-Mg-PAy" secondAttribute="trailing" constant="-20" id="pP5-Yv-GRr"/>
-                            <constraint firstItem="STO-QI-kYm" firstAttribute="leading" secondItem="gSi-Gc-KID" secondAttribute="leadingMargin" constant="-20" id="r1T-tq-x9b"/>
-                            <constraint firstItem="jhe-Mg-PAy" firstAttribute="leading" secondItem="gSi-Gc-KID" secondAttribute="leadingMargin" constant="-20" id="seT-Pm-m1I"/>
-                            <constraint firstItem="jhe-Mg-PAy" firstAttribute="top" secondItem="0HC-5e-F1e" secondAttribute="bottom" constant="-20" id="wDR-tI-dqX"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="2cX-gB-exT" secondAttribute="trailing" constant="-20" id="ww1-0C-HDp"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="QRb-dQ-cNX" secondAttribute="trailing" constant="-20" id="wMf-Jb-E3m"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="Q50-5S-FBR" secondAttribute="trailing" constant="-20" id="wh8-JF-b33"/>
                         </constraints>
                     </view>
                 </viewController>

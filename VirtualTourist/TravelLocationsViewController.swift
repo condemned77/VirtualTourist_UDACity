@@ -41,6 +41,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
     
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
         print("mapView didSelectAnnotationView")
+        mapView.deselectAnnotation(view.annotation! , animated: true)
         self.performSegueWithIdentifier("showPhotoAlbum", sender: self)
     }
     
