@@ -7,14 +7,15 @@
         <attribute name="longitudeDelta" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
     </entity>
     <entity name="Photo" representedClassName=".Photo" syncable="YES">
+        <attribute name="image" optional="YES" attributeType="Binary" syncable="YES"/>
         <relationship name="pin" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Pin" inverseName="pictures" inverseEntity="Pin" syncable="YES"/>
     </entity>
     <entity name="Pin" representedClassName=".Pin" syncable="YES">
         <relationship name="pictures" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Photo" inverseName="pin" inverseEntity="Photo" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Photo" positionX="-54" positionY="-9" width="128" height="60"/>
-        <element name="Pin" positionX="-63" positionY="-18" width="128" height="60"/>
         <element name="MapLocation" positionX="-63" positionY="0" width="128" height="105"/>
+        <element name="Photo" positionX="-54" positionY="-9" width="128" height="75"/>
+        <element name="Pin" positionX="-63" positionY="-18" width="128" height="60"/>
     </elements>
 </model>

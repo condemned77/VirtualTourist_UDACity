@@ -91,12 +91,14 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
             print("State ended")
             self.mapViewIF.lastPinSetToMap = nil
             //TODO: start prefetching of photos here!
+            let _ = Pin(withCoordiantes: locationCoordinate, andContext: sharedContext)
             break
         case .Cancelled:
             print("state canceled")
             break
         case .Changed:
             print("state: changed")
+            self.animateFallingPin = false
             self.mapViewIF.movePin(locationCoordinate)
             break
         case .Failed:

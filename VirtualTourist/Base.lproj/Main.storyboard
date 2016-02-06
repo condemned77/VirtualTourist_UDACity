@@ -105,7 +105,7 @@
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="Ngh-tH-wrk">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="PhotoCell" id="Ngh-tH-wrk">
                                         <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
@@ -132,7 +132,7 @@
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
                                 <items>
                                     <navigationItem id="HY2-LG-nm4">
-                                        <barButtonItem key="leftBarButtonItem" title="OK" style="plain" id="lXE-PX-tld">
+                                        <barButtonItem key="leftBarButtonItem" title="OK" id="lXE-PX-tld">
                                             <connections>
                                                 <action selector="okButtonPressed:" destination="jvk-W8-iGa" id="AfE-2d-FiW"/>
                                             </connections>

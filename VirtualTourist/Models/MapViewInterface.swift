@@ -52,6 +52,7 @@ class MapViewInterface : NSObject {
         }
     }
     
+    
     func storeCurrentMapPosition() {
         let locationCoordinateRegion : MKCoordinateRegion = self.mapView.region
 
@@ -73,7 +74,6 @@ class MapViewInterface : NSObject {
                 abort()
             }
         }
-        
     }
 
 

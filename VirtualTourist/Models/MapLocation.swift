@@ -12,17 +12,17 @@ import CoreData
 import MapKit
 
 class MapLocation : NSManagedObject {
-    @NSManaged var longitude        : NSNumber
-    @NSManaged var latitude         : NSNumber
-    @NSManaged var latitudeDelta    : NSNumber
-    @NSManaged var longitudeDelta   : NSNumber
+    @NSManaged var longitude        : Double
+    @NSManaged var latitude         : Double
+    @NSManaged var latitudeDelta    : Double
+    @NSManaged var longitudeDelta   : Double
     
     var mapRegion : MKCoordinateRegion {
         get {
-            let long : CLLocationDegrees        = CLLocationDegrees(self.longitude.doubleValue)
-            let lat : CLLocationDegrees         = CLLocationDegrees(self.latitude.doubleValue)
-            let longDelta : CLLocationDegrees   = CLLocationDegrees(self.longitudeDelta.doubleValue)
-            let latDetla : CLLocationDegrees    = CLLocationDegrees(self.latitudeDelta.doubleValue)
+            let long : CLLocationDegrees        = CLLocationDegrees(self.longitude)
+            let lat : CLLocationDegrees         = CLLocationDegrees(self.latitude)
+            let longDelta : CLLocationDegrees   = CLLocationDegrees(self.longitudeDelta)
+            let latDetla : CLLocationDegrees    = CLLocationDegrees(self.latitudeDelta)
             
             let coordinate                  = CLLocationCoordinate2D(latitude: lat, longitude: long)
             let span                        = MKCoordinateSpan(latitudeDelta: latDetla, longitudeDelta: longDelta)
