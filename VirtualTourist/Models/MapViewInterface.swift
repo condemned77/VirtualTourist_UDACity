@@ -11,11 +11,12 @@ import MapKit
 import CoreData
 
 class MapViewInterface : NSObject {
-    var lastPinSetToMap : MKAnnotation?
+    var lastPinSetToMap : MKPointAnnotation?
 
     lazy var sharedContext = { CoreDataStackManager.sharedInstance().managedObjectContext}()
     weak var mapView : MKMapView!
     var currentMapLocation : MapLocation!
+
     
     init(withMapView mapView : MKMapView) {
         super.init()
@@ -62,29 +63,19 @@ class MapViewInterface : NSObject {
             self.currentMapLocation.mapRegion = locationCoordinateRegion
         }
         
-        if sharedContext.hasChanges {
-            do {
-                try sharedContext.save()
-                print("context saved with coordinateRegion: \(locationCoordinateRegion)")
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nserror = error as NSError
-                NSLog("Unresolved error \(nserror), \(nserror.userInfo)")
-                abort()
-            }
-        }
+        CoreDataStackManager.sharedInstance().saveContext()
     }
 
 
     //MARK: Manipulate map
-    func addPinToMap(forCoordinate coordinate : CLLocationCoordinate2D) {
+    func addPinToMap(forCoordinate coordinate : CLLocationCoordinate2D) -> MKPointAnnotation {
         print("Add pin to: \(coordinate)")
         let annotation = MKPointAnnotation()
         annotation.title = "dropped pin"
         annotation.coordinate = coordinate
         self.mapView.addAnnotation(annotation)
         self.lastPinSetToMap = annotation
+        return annotation
     }
 
     

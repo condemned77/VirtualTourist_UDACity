@@ -10,6 +10,7 @@ import Foundation
 import MapKit
 
 class FlickrAPI: NSObject {
+    var imageURLs : [NSURL] = [NSURL]()
     var longitude : Double?
     var latitude : Double?
     
@@ -22,6 +23,11 @@ class FlickrAPI: NSObject {
             return self.createCoordinates()
         }
     }
+    
+    struct Caches {
+        static let imageCache = ImageCache()
+    }
+
     
     private func createCoordinates() -> CLLocationCoordinate2D {
         let coordinates : CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: self.latitude!, longitude: self.longitude!)
@@ -38,9 +44,9 @@ class FlickrAPI: NSObject {
         return "\(bottom_left_lon),\(bottom_left_lat),\(top_right_lon),\(top_right_lat)"
     }
     
-    func searchByLatLon(coordinates : CLLocationCoordinate2D) {
-        print("searching photos for coordinates: \(coordinates)")
-        self.photoCoordinates = coordinates
+    func searchByLatLon(forPin pin : Pin) {
+        print("searching photos for coordinates: \(pin.coordinates)")
+        self.photoCoordinates = pin.coordinates
         let methodParameters = [
             FlickrConstants.FlickrParameterKeys.Method: FlickrConstants.FlickrParameterValues.SearchMethod,
             FlickrConstants.FlickrParameterKeys.APIKey: FlickrConstants.FlickrParameterValues.APIKey,
@@ -50,10 +56,10 @@ class FlickrAPI: NSObject {
             FlickrConstants.FlickrParameterKeys.Format: FlickrConstants.FlickrParameterValues.ResponseFormat,
             FlickrConstants.FlickrParameterKeys.NoJSONCallback: FlickrConstants.FlickrParameterValues.DisableJSONCallback
         ]
-        displayImageFromFlickrBySearch(methodParameters)
+        downloadImageData(withParameter: methodParameters, forPin: pin)
     }
 
-    private func displayImageFromFlickrBySearch(methodParameters: [String:AnyObject]) {
+    private func downloadImageData(withParameter methodParameters: [String:AnyObject], forPin pin: Pin) {
         
         // create session and request
         let session = NSURLSession.sharedSession()
@@ -117,7 +123,13 @@ class FlickrAPI: NSObject {
                 displayError("Cannot find key '\(FlickrConstants.FlickrResponseKeys.Pages)' in \(photosDictionary)")
                 return
             }
-            
+            if let photos = photosDictionary["photo"] as? [[String : AnyObject]] {
+                for url in photos {
+                    print("key: \(url["url_m"])")
+                    self.imageURLs.append(NSURL(string: url["url_m"] as! String)!)
+                }
+                pin.addImages(fromURLs: self.imageURLs)
+            }
         }
         
         // start the task!

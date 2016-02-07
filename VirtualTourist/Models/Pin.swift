@@ -11,10 +11,23 @@ import MapKit
 import CoreData
 
 class Pin : NSManagedObject{
+    lazy var sharedContext = CoreDataStackManager.sharedInstance().managedObjectContext
+    
     @NSManaged var photos           : [Photo]
     @NSManaged var longitude        : Double
     @NSManaged var latitude         : Double
     let flickrAPI = FlickrAPI.sharedInstance()
+    var coordinates : CLLocationCoordinate2D  {
+        set (newCoordinates){
+            self.longitude = newCoordinates.longitude
+            self.latitude = newCoordinates.latitude
+        }
+        get {
+            let calculatedCoordinates = CLLocationCoordinate2D(latitude: self.latitude, longitude: self.longitude)
+            return calculatedCoordinates
+        }
+    }
+    
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
@@ -22,14 +35,19 @@ class Pin : NSManagedObject{
     init(withCoordiantes coordinates : CLLocationCoordinate2D, andContext context: NSManagedObjectContext) {
         let entity = NSEntityDescription.entityForName("Pin", inManagedObjectContext: context)
         super.init(entity: entity!, insertIntoManagedObjectContext: context)
-        self.startFetchingPhotosForCoordinates(coordinates)
+        self.coordinates = coordinates
+        self.startFetchingPhotos()
     }
     
-    func startFetchingPhotosForCoordinates(coordinates : CLLocationCoordinate2D) {
-        let session = NSURLSession.sharedSession()
-        let url = NSURL(string: "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=c70e6c6d0a7ec9000510a4467f050d51b&text=test&format=json&nojsoncallback=1&")!
-        let request = NSURLRequest(URL: url)
-        
-        flickrAPI.searchByLatLon(coordinates)
+    func startFetchingPhotos() {
+        flickrAPI.searchByLatLon(forPin: self)
+    }
+    
+    func addImages(fromURLs urls: [NSURL]) {
+        for url in urls {
+            let photo = Photo(withPin: self, andContext: sharedContext)
+            photo.loadPhotoFromURL(url)
+            self.photos.append(photo)
+        }
     }
 }

@@ -16,17 +16,37 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
     var animateFallingPin : Bool = true
     
     var mapViewIF : MapViewInterface!
-    
+    var pins : [MKPointAnnotation : Pin] = [MKPointAnnotation : Pin]()
     lazy var sharedContext = {
         CoreDataStackManager.sharedInstance().managedObjectContext
     }()
     
     override func viewDidLoad() {
+        print("TavelLocationsViewController viewDidLoad")
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         self.mapView.delegate   = self
         self.mapViewIF = MapViewInterface(withMapView: self.mapView)
         self.mapViewIF.loadPersistedMapLocation()
+        let fetchReq = NSFetchRequest(entityName: "Pin")
+        var pins : [Pin]
+        do {
+            pins = try sharedContext.executeFetchRequest(fetchReq) as! [Pin]
+            print("\(pins.count) pins loaded")
+            self.loadPinsToMap(pins)
+        } catch let error {
+            print("error requesting pins from Core Data: \(error)")
+        }
+    }
+    
+    
+    func loadPinsToMap(pins : [Pin]) {
+        for pin in pins {
+            print("loading pin: \(pin) to map")
+            self.animateFallingPin = false
+            let addedPointAnnotation = mapViewIF.addPinToMap(forCoordinate: pin.coordinates)
+            self.pins[addedPointAnnotation] = pin
+        }
     }
     
     
@@ -42,7 +62,16 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
         print("mapView didSelectAnnotationView")
         mapView.deselectAnnotation(view.annotation! , animated: true)
-        self.performSegueWithIdentifier("showPhotoAlbum", sender: self)
+        let photoAlbumVC = self.storyboard!.instantiateViewControllerWithIdentifier("PhotoAlbumViewController") as! PhotoAlbumViewController
+        if let viewAnnotation = view.annotation {
+            if viewAnnotation.isKindOfClass(MKPointAnnotation) {
+                let pointAnnotation = view.annotation! as! MKPointAnnotation
+                photoAlbumVC.associatedPin = self.pins[pointAnnotation]
+                self.presentViewController(photoAlbumVC, animated: true, completion: nil)
+            } else {
+                print("MKPointAnnotation not unwrapped from MKAnnotationView, refusing to show PhotoAlbum")
+            }
+        }
     }
     
     
@@ -89,9 +118,10 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
             break;
         case .Ended:
             print("State ended")
+            let pin = Pin(withCoordiantes: locationCoordinate, andContext: sharedContext)
+            self.pins[self.mapViewIF.lastPinSetToMap!] = pin
             self.mapViewIF.lastPinSetToMap = nil
-            //TODO: start prefetching of photos here!
-            let _ = Pin(withCoordiantes: locationCoordinate, andContext: sharedContext)
+            CoreDataStackManager.sharedInstance().saveContext()
             break
         case .Cancelled:
             print("state canceled")
