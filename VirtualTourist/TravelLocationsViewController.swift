@@ -39,7 +39,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         }
     }
     
-    
+    //loading persisted pin to map after app start.
     func loadPinsToMap(pins : [Pin]) {
         for pin in pins {
             print("loading pin: \(pin) to map")
@@ -66,7 +66,10 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         if let viewAnnotation = view.annotation {
             if viewAnnotation.isKindOfClass(MKPointAnnotation) {
                 let pointAnnotation = view.annotation! as! MKPointAnnotation
-                photoAlbumVC.associatedPin = self.pins[pointAnnotation]
+                let pin = self.pins[pointAnnotation]
+                photoAlbumVC.photos = pin!.photos
+                photoAlbumVC.pinCoordinates = pin!.coordinates
+                photoAlbumVC.mapViewRegion = self.mapView.region
                 self.presentViewController(photoAlbumVC, animated: true, completion: nil)
             } else {
                 print("MKPointAnnotation not unwrapped from MKAnnotationView, refusing to show PhotoAlbum")

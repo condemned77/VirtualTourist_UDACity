@@ -10,7 +10,7 @@ import Foundation
 import MapKit
 
 class FlickrAPI: NSObject {
-    var imageURLs : [NSURL] = [NSURL]()
+    var imageURLs : [String] = [String]()
     var longitude : Double?
     var latitude : Double?
     
@@ -126,7 +126,7 @@ class FlickrAPI: NSObject {
             if let photos = photosDictionary["photo"] as? [[String : AnyObject]] {
                 for url in photos {
                     print("key: \(url["url_m"])")
-                    self.imageURLs.append(NSURL(string: url["url_m"] as! String)!)
+                    self.imageURLs.append(url["url_m"] as! String)
                 }
                 pin.addImages(fromURLs: self.imageURLs)
             }

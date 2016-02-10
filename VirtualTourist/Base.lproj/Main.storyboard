@@ -92,9 +92,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <mapView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="aQz-Js-k3x">
-                                <rect key="frame" x="0.0" y="44" width="600" height="120"/>
-                            </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Q50-5S-FBR">
                                 <rect key="frame" x="0.0" y="164" width="600" height="392"/>
                                 <color key="backgroundColor" red="0.0" green="0.66090106959999995" blue="0.99482482670000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -177,6 +174,9 @@
                                     </navigationItem>
                                 </items>
                             </navigationBar>
+                            <mapView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" mapType="standard" scrollEnabled="NO" rotateEnabled="NO" pitchEnabled="NO" showsBuildings="NO" showsPointsOfInterest="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aQz-Js-k3x">
+                                <rect key="frame" x="0.0" y="44" width="600" height="120"/>
+                            </mapView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -196,6 +196,9 @@
                             <constraint firstAttribute="trailingMargin" secondItem="Q50-5S-FBR" secondAttribute="trailing" constant="-20" id="wh8-JF-b33"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="mapView" destination="aQz-Js-k3x" id="3a4-Vc-vLA"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="SLS-fT-CI5" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

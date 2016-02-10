@@ -13,7 +13,7 @@ import CoreData
 class Pin : NSManagedObject{
     lazy var sharedContext = CoreDataStackManager.sharedInstance().managedObjectContext
     
-    @NSManaged var photos           : [Photo]
+    @NSManaged var photos           : NSMutableOrderedSet
     @NSManaged var longitude        : Double
     @NSManaged var latitude         : Double
     let flickrAPI = FlickrAPI.sharedInstance()
@@ -43,11 +43,11 @@ class Pin : NSManagedObject{
         flickrAPI.searchByLatLon(forPin: self)
     }
     
-    func addImages(fromURLs urls: [NSURL]) {
+    func addImages(fromURLs urls: [String]) {
         for url in urls {
             let photo = Photo(withPin: self, andContext: sharedContext)
-            photo.loadPhotoFromURL(url)
-            self.photos.append(photo)
+            photo.imageURL = url
+            self.photos.addObject(photo)
         }
     }
 }

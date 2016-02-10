@@ -12,11 +12,17 @@ import CoreData
 
 class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
-    var associatedPin : Pin!
+    @IBOutlet weak var mapView: MKMapView!
+    var pinCoordinates : CLLocationCoordinate2D!
+    var photos : NSMutableOrderedSet!
+    var mapViewRegion : MKCoordinateRegion?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        let pin = MKPointAnnotation()
+        pin.coordinate = pinCoordinates
+        mapView.region = self.mapViewRegion!
+        mapView.addAnnotation(pin)
     }
     
     @IBAction func okButtonPressed(sender: UIBarButtonItem) {
@@ -30,7 +36,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     
     internal func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("collectionView numbersOfItemsInSection")
-        if let photos = associatedPin?.photos {
+        if let photos = self.photos {
             print("photo count: \(photos.count)")
             return photos.count
         } else {
@@ -39,12 +45,14 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     }
     
     // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
-
     internal func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+        print("collectionView cellForItemAtIndexPath")
         let cell : PhotoCell = collectionView.dequeueReusableCellWithReuseIdentifier("PhotoCell", forIndexPath: indexPath) as! PhotoCell
+        cell.contentView.backgroundColor = UIColor.redColor()
         cell.activityIndicator?.startAnimating()
-        if indexPath.row < associatedPin.photos.count {
-            associatedPin.photos[indexPath.row].delegate = cell
+        if indexPath.row < self.photos.count {
+            let photo = (self.photos.objectAtIndex(indexPath.row) as! Photo)
+            cell.photo = photo
         }
         return cell
     }

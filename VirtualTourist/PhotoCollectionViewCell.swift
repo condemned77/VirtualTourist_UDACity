@@ -11,7 +11,12 @@ import UIKit
 
 class PhotoCell : UICollectionViewCell, PhotoDelegate {
     
-    var photo : Photo?
+    var photo : Photo! {
+        didSet  {
+            photo.delegate = self
+            photo.startLoadingPhoto()
+        }
+    }
     var image : UIImage {
         set (newImage) {
             self.imageView!.image = newImage
@@ -20,6 +25,7 @@ class PhotoCell : UICollectionViewCell, PhotoDelegate {
             return self.imageView!.image!
         }
     }
+    
     @IBOutlet var imageView: UIImageView!
     @IBOutlet var activityIndicator: UIActivityIndicatorView!
     
@@ -27,22 +33,27 @@ class PhotoCell : UICollectionViewCell, PhotoDelegate {
         super.init(coder: aDecoder)
         print("PhotoCell instantiating: imageView(\(imageView)) and activityIndicator(\(activityIndicator)) should be instantiated too")
         if let tempImageView = self.imageView {
-            if let tempImage = tempImageView.image {
-                
+            if let _ = tempImageView.image {
+                showImageView()
             } else {
                 self.activityIndicator!.startAnimating()
             }
         } else {
             print("fucking imageview not available??")
-
         }
     }
     
     
+    func showImageView() {
+        imageView!.image = photo.photoImage
+        self.bringSubviewToFront(imageView)
+        activityIndicator.stopAnimating()
+    }
+    
+    
     func imageLoaded() {
-        print("PhotoColectionViewCell: imageLoaded")
-        image = (photo?.image)!
-        self.bringSubviewToFront(imageView!)
+        print("[PhotoColectionViewCell]: imageLoaded")
         activityIndicator?.stopAnimating()
+        showImageView()
     }
 }

@@ -9,13 +9,13 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "VirtualTourist/Models/FlickrAPI.swift"
-            timestampString = "476555342.194233"
+            filePath = "VirtualTourist/PhotoCollectionViewCell.swift"
+            timestampString = "476566780.629404"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "131"
-            endingLineNumber = "131"
-            landmarkName = "downloadImageData(withParameter:forPin:)"
+            startingLineNumber = "51"
+            endingLineNumber = "51"
+            landmarkName = "showImageView()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
