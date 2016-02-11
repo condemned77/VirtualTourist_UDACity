@@ -44,9 +44,9 @@ class FlickrAPI: NSObject {
         return "\(bottom_left_lon),\(bottom_left_lat),\(top_right_lon),\(top_right_lat)"
     }
     
-    func searchByLatLon(forPin pin : Pin) {
-        print("searching photos for coordinates: \(pin.coordinates)")
-        self.photoCoordinates = pin.coordinates
+    func searchImagesByLatLon(forCoordinates coor : CLLocationCoordinate2D, withCompletionHandler completionHandler : ([String], NSError?) -> Void) {
+        print("searching photos for coordinates: \(coor)")
+        self.photoCoordinates = coor
         let methodParameters = [
             FlickrConstants.FlickrParameterKeys.Method: FlickrConstants.FlickrParameterValues.SearchMethod,
             FlickrConstants.FlickrParameterKeys.APIKey: FlickrConstants.FlickrParameterValues.APIKey,
@@ -56,10 +56,10 @@ class FlickrAPI: NSObject {
             FlickrConstants.FlickrParameterKeys.Format: FlickrConstants.FlickrParameterValues.ResponseFormat,
             FlickrConstants.FlickrParameterKeys.NoJSONCallback: FlickrConstants.FlickrParameterValues.DisableJSONCallback
         ]
-        downloadImageData(withParameter: methodParameters, forPin: pin)
+        downloadImageData(withParameter: methodParameters, withCompletionHandler : completionHandler)
     }
 
-    private func downloadImageData(withParameter methodParameters: [String:AnyObject], forPin pin: Pin) {
+    private func downloadImageData(withParameter methodParameters: [String:AnyObject], withCompletionHandler handler : ([String], NSError?) -> Void) {
         
         // create session and request
         let session = NSURLSession.sharedSession()
@@ -128,7 +128,7 @@ class FlickrAPI: NSObject {
                     print("key: \(url["url_m"])")
                     self.imageURLs.append(url["url_m"] as! String)
                 }
-                pin.addImages(fromURLs: self.imageURLs)
+                handler(self.imageURLs, nil)
             }
         }
         

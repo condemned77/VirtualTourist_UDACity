@@ -92,6 +92,33 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QRb-dQ-cNX" userLabel="BottomToolbar">
+                                <rect key="frame" x="0.0" y="556" width="600" height="44"/>
+                                <items>
+                                    <barButtonItem style="plain" systemItem="flexibleSpace" id="sYT-Xc-Jnk"/>
+                                    <barButtonItem title="New Collection" id="PRw-3P-bhZ">
+                                        <connections>
+                                            <action selector="newCollectionPressed:" destination="jvk-W8-iGa" id="NMn-UB-dyQ"/>
+                                        </connections>
+                                    </barButtonItem>
+                                    <barButtonItem style="plain" systemItem="flexibleSpace" id="8WZ-I7-zvp"/>
+                                </items>
+                            </toolbar>
+                            <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ggx-eI-LWJ">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
+                                <items>
+                                    <navigationItem id="HY2-LG-nm4">
+                                        <barButtonItem key="leftBarButtonItem" title="OK" id="lXE-PX-tld">
+                                            <connections>
+                                                <action selector="okButtonPressed:" destination="jvk-W8-iGa" id="AfE-2d-FiW"/>
+                                            </connections>
+                                        </barButtonItem>
+                                    </navigationItem>
+                                </items>
+                            </navigationBar>
+                            <mapView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" mapType="standard" scrollEnabled="NO" rotateEnabled="NO" pitchEnabled="NO" showsBuildings="NO" showsPointsOfInterest="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aQz-Js-k3x">
+                                <rect key="frame" x="0.0" y="44" width="600" height="120"/>
+                            </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Q50-5S-FBR">
                                 <rect key="frame" x="0.0" y="164" width="600" height="392"/>
                                 <color key="backgroundColor" red="0.0" green="0.66090106959999995" blue="0.99482482670000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -150,33 +177,6 @@
                                     <outlet property="delegate" destination="jvk-W8-iGa" id="2YU-MP-IAA"/>
                                 </connections>
                             </collectionView>
-                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QRb-dQ-cNX" userLabel="BottomToolbar">
-                                <rect key="frame" x="0.0" y="556" width="600" height="44"/>
-                                <items>
-                                    <barButtonItem style="plain" systemItem="flexibleSpace" id="sYT-Xc-Jnk"/>
-                                    <barButtonItem title="New Collection" id="PRw-3P-bhZ">
-                                        <connections>
-                                            <action selector="newCollectionPressed:" destination="jvk-W8-iGa" id="NMn-UB-dyQ"/>
-                                        </connections>
-                                    </barButtonItem>
-                                    <barButtonItem style="plain" systemItem="flexibleSpace" id="8WZ-I7-zvp"/>
-                                </items>
-                            </toolbar>
-                            <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ggx-eI-LWJ">
-                                <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
-                                <items>
-                                    <navigationItem id="HY2-LG-nm4">
-                                        <barButtonItem key="leftBarButtonItem" title="OK" id="lXE-PX-tld">
-                                            <connections>
-                                                <action selector="okButtonPressed:" destination="jvk-W8-iGa" id="AfE-2d-FiW"/>
-                                            </connections>
-                                        </barButtonItem>
-                                    </navigationItem>
-                                </items>
-                            </navigationBar>
-                            <mapView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" mapType="standard" scrollEnabled="NO" rotateEnabled="NO" pitchEnabled="NO" showsBuildings="NO" showsPointsOfInterest="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aQz-Js-k3x">
-                                <rect key="frame" x="0.0" y="44" width="600" height="120"/>
-                            </mapView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -197,6 +197,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="collectionView" destination="Q50-5S-FBR" id="gZV-cZ-giZ"/>
                         <outlet property="mapView" destination="aQz-Js-k3x" id="3a4-Vc-vLA"/>
                     </connections>
                 </viewController>

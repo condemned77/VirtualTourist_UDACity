@@ -41,7 +41,8 @@ class Photo : NSManagedObject {
         }
     }
     
-    func startLoadingPhoto() {
+    func startLoadingPhotoURL() {
+        print("[Photo.startLoadingPhotoURL]: loading url: \(imageURL)")
         if photoImage != nil {
             print("[Photo]: image already available, skipping download")
             delegate?.imageLoaded()

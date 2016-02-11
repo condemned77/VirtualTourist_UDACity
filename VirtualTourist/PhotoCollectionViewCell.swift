@@ -14,7 +14,7 @@ class PhotoCell : UICollectionViewCell, PhotoDelegate {
     var photo : Photo! {
         didSet  {
             photo.delegate = self
-            photo.startLoadingPhoto()
+            photo.startLoadingPhotoURL()
         }
     }
     var image : UIImage {
@@ -48,6 +48,7 @@ class PhotoCell : UICollectionViewCell, PhotoDelegate {
         imageView!.image = photo.photoImage
         self.bringSubviewToFront(imageView)
         activityIndicator.stopAnimating()
+        activityIndicator.removeFromSuperview()
     }
     
     

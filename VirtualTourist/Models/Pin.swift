@@ -36,18 +36,26 @@ class Pin : NSManagedObject{
         let entity = NSEntityDescription.entityForName("Pin", inManagedObjectContext: context)
         super.init(entity: entity!, insertIntoManagedObjectContext: context)
         self.coordinates = coordinates
-        self.startFetchingPhotos()
+        self.fetchNewPhotos()
     }
     
-    func startFetchingPhotos() {
-        flickrAPI.searchByLatLon(forPin: self)
+    func fetchNewPhotos() {
+        flickrAPI.searchImagesByLatLon(forCoordinates: coordinates) {
+            urls, error in
+            guard error == nil else {print("error while downloading image urls from flickr: \(error)"); return}
+            for (index, url) in urls.enumerate() {
+                (self.photos.objectAtIndex(index) as! Photo).imageURL = url
+            }
+        }
     }
     
     func addImages(fromURLs urls: [String]) {
-        for url in urls {
+        for (index, url) in urls.enumerate() {
+            guard index < Constants.maxAmountOfPhotos else {print("Amount of displayed photos is limited to \(Constants.maxAmountOfPhotos)"); return}
             let photo = Photo(withPin: self, andContext: sharedContext)
             photo.imageURL = url
             self.photos.addObject(photo)
         }
+        CoreDataStackManager.sharedInstance().saveContext()
     }
 }

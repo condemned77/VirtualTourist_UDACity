@@ -12,7 +12,8 @@ import CoreData
 
 class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
-    @IBOutlet weak var mapView: MKMapView!
+    @IBOutlet weak var mapView : MKMapView!
+    @IBOutlet weak var collectionView : UICollectionView!
     var pinCoordinates : CLLocationCoordinate2D!
     var photos : NSMutableOrderedSet!
     var mapViewRegion : MKCoordinateRegion?
@@ -29,16 +30,60 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         self.dismissViewControllerAnimated(true, completion: nil)
     }
     
-    
+    //download new photos
     @IBAction func newCollectionPressed(sender: UIBarButtonItem) {
-        //TODO download new photos
+        self.removeCurrentlyDisplayedImages()
+        FlickrAPI.sharedInstance().searchImagesByLatLon(forCoordinates: pinCoordinates) {
+            urls, error in
+            let newURLs : [String] = self.findNewImageURLs(fromURLArray: urls)
+            for (index, imageURL) in newURLs.enumerate() {
+                guard index < self.photos.count else {return}
+
+                let photo = self.photos.objectAtIndex(index) as! Photo
+                photo.imageURL = imageURL
+                photo.startLoadingPhotoURL()
+            }
+        }
     }
+    
+    func removeCurrentlyDisplayedImages() {
+        for (var idx = 0; idx < photos.count; ++idx) {
+            (photos.objectAtIndex(idx) as! Photo).photoImage = nil
+        }
+    }
+    
+    func findNewImageURLs(fromURLArray urlArray : [String]) -> [String]{
+        var freshImageURLs : [String] = [String]()
+        for url in urlArray {
+            if urlIsCurrentlyDisplayed(url) {
+                continue
+            } else {
+                freshImageURLs.append(url)
+            }
+        }
+        return freshImageURLs
+    }
+    
+    func urlIsCurrentlyDisplayed(url : String) -> Bool{
+        for (var idx = 0; idx < self.photos.count; ++idx) {
+            let photo = self.photos.objectAtIndex(idx) as! Photo
+            if photo.imageURL == url {
+                return true
+            }
+        }
+        return false
+    }
+    
     
     internal func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("collectionView numbersOfItemsInSection")
         if let photos = self.photos {
             print("photo count: \(photos.count)")
-            return photos.count
+            if photos.count > Constants.maxAmountOfPhotos {
+                return Constants.maxAmountOfPhotos
+            } else {
+                return photos.count
+            }
         } else {
             return 9 //TODO maybe set to 0
         }

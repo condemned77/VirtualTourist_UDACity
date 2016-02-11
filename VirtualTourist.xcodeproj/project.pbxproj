@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		093C8ECC1C6BC9A100B69DC8 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093C8ECB1C6BC9A100B69DC8 /* AppConstants.swift */; };
 		094206DA1C5A98D9008AFBC9 /* MapLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094206D91C5A98D9008AFBC9 /* MapLocation.swift */; };
 		094206DC1C5E69DE008AFBC9 /* MapViewInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094206DB1C5E69DE008AFBC9 /* MapViewInterface.swift */; };
 		094206DE1C5E8086008AFBC9 /* FlickrConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094206DD1C5E8086008AFBC9 /* FlickrConstants.swift */; };
@@ -26,6 +27,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		093C8ECB1C6BC9A100B69DC8 /* AppConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
 		094206D91C5A98D9008AFBC9 /* MapLocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapLocation.swift; sourceTree = "<group>"; };
 		094206DB1C5E69DE008AFBC9 /* MapViewInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewInterface.swift; sourceTree = "<group>"; };
 		094206DD1C5E8086008AFBC9 /* FlickrConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlickrConstants.swift; sourceTree = "<group>"; };
@@ -101,6 +103,7 @@
 				094206DF1C5E81F3008AFBC9 /* FlickrAPI.swift */,
 				098F5FA61C62804C002E0B30 /* Photo.swift */,
 				0956B5511C67A43100527F2B /* ImageCache.swift */,
+				093C8ECB1C6BC9A100B69DC8 /* AppConstants.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -186,6 +189,7 @@
 				09D829951C553406009C77D7 /* AppDelegate.swift in Sources */,
 				098F5FA71C62804C002E0B30 /* Photo.swift in Sources */,
 				09D829B21C57E66C009C77D7 /* Pin.swift in Sources */,
+				093C8ECC1C6BC9A100B69DC8 /* AppConstants.swift in Sources */,
 				09D8299D1C553406009C77D7 /* VirtualTourist.xcdatamodeld in Sources */,
 				094206DE1C5E8086008AFBC9 /* FlickrConstants.swift in Sources */,
 			);
