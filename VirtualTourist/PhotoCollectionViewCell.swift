@@ -9,20 +9,24 @@
 import Foundation
 import UIKit
 
-class PhotoCell : UICollectionViewCell, PhotoDelegate {
+class PhotoCell : UICollectionViewCell, PhotoImageLoadedDelegate {
     
-    var photo : Photo! {
+    var photo : Photo? {
         didSet  {
-            photo.delegate = self
-            photo.startLoadingPhotoURL()
+            if let unwrappedPhoto = photo {
+                unwrappedPhoto.delegate = self
+            } else {
+                self.bringSubviewToFront(activityIndicator)
+                activityIndicator.startAnimating()
+            }
         }
     }
-    var image : UIImage {
+    var image : UIImage? {
         set (newImage) {
             self.imageView!.image = newImage
         }
         get {
-            return self.imageView!.image!
+            return self.imageView!.image
         }
     }
     
@@ -39,13 +43,17 @@ class PhotoCell : UICollectionViewCell, PhotoDelegate {
                 self.activityIndicator!.startAnimating()
             }
         } else {
-            print("fucking imageview not available??")
+            print("Imageview not available??")
         }
     }
     
+    func loadPlaceholderImage() {
+        image = UIImage(named: "Placeholder")!
+        imageView.alpha = 0.3
+    }
     
     func showImageView() {
-        imageView!.image = photo.photoImage
+        imageView!.image = photo!.photoImage
         self.bringSubviewToFront(imageView)
         activityIndicator.stopAnimating()
         activityIndicator.removeFromSuperview()
@@ -56,5 +64,6 @@ class PhotoCell : UICollectionViewCell, PhotoDelegate {
         print("[PhotoColectionViewCell]: imageLoaded")
         activityIndicator?.stopAnimating()
         showImageView()
+        imageView.alpha = 1.0
     }
 }

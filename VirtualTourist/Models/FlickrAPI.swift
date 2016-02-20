@@ -9,10 +9,15 @@
 import Foundation
 import MapKit
 
+protocol ImageURLDownloadedDelegate {
+    func newImageURLDownloaded(urlString : String);
+}
+
 class FlickrAPI: NSObject {
     var imageURLs : [String] = [String]()
     var longitude : Double?
     var latitude : Double?
+    var delegate : ImageURLDownloadedDelegate?
     
     var photoCoordinates : CLLocationCoordinate2D? {
         set (newCoordinates){
@@ -44,9 +49,11 @@ class FlickrAPI: NSObject {
         return "\(bottom_left_lon),\(bottom_left_lat),\(top_right_lon),\(top_right_lat)"
     }
     
-    func searchImagesByLatLon(forCoordinates coor : CLLocationCoordinate2D, withCompletionHandler completionHandler : ([String], NSError?) -> Void) {
+
+    func searchImagesByLatLon(forCoordinates coor : CLLocationCoordinate2D, updateMeForEachURL delegate : ImageURLDownloadedDelegate?, completionHandler : (([String], NSError?) -> Void)?) {
         print("searching photos for coordinates: \(coor)")
         self.photoCoordinates = coor
+        self.delegate = delegate
         let methodParameters = [
             FlickrConstants.FlickrParameterKeys.Method: FlickrConstants.FlickrParameterValues.SearchMethod,
             FlickrConstants.FlickrParameterKeys.APIKey: FlickrConstants.FlickrParameterValues.APIKey,
@@ -54,12 +61,15 @@ class FlickrAPI: NSObject {
             FlickrConstants.FlickrParameterKeys.SafeSearch: FlickrConstants.FlickrParameterValues.UseSafeSearch,
             FlickrConstants.FlickrParameterKeys.Extras: FlickrConstants.FlickrParameterValues.MediumURL,
             FlickrConstants.FlickrParameterKeys.Format: FlickrConstants.FlickrParameterValues.ResponseFormat,
-            FlickrConstants.FlickrParameterKeys.NoJSONCallback: FlickrConstants.FlickrParameterValues.DisableJSONCallback
+            FlickrConstants.FlickrParameterKeys.NoJSONCallback: FlickrConstants.FlickrParameterValues.DisableJSONCallback,
+            FlickrConstants.FlickrParameterKeys.SearchAccuracy: FlickrConstants.FlickrParameterValues.accuracyValue
         ]
-        downloadImageData(withParameter: methodParameters, withCompletionHandler : completionHandler)
+        dispatch_async(dispatch_get_main_queue()) {
+            self.downloadImageData(withParameter: methodParameters, withCompletionHandler : completionHandler)
+        }
     }
 
-    private func downloadImageData(withParameter methodParameters: [String:AnyObject], withCompletionHandler handler : ([String], NSError?) -> Void) {
+    private func downloadImageData(withParameter methodParameters: [String:AnyObject], withCompletionHandler handler : (([String], NSError?) -> Void)?) {
         
         // create session and request
         let session = NSURLSession.sharedSession()
@@ -100,7 +110,7 @@ class FlickrAPI: NSObject {
             let parsedResult: AnyObject!
             do {
                 parsedResult = try NSJSONSerialization.JSONObjectWithData(data, options: .AllowFragments)
-                print("parsed result: \(parsedResult)")
+//                print("parsed result: \(parsedResult)")
             } catch {
                 displayError("Could not parse the data as JSON: '\(data)'")
                 return
@@ -117,18 +127,20 @@ class FlickrAPI: NSObject {
                 displayError("Cannot find keys '\(FlickrConstants.FlickrResponseKeys.Photos)' in \(parsedResult)")
                 return
             }
-            print("photoDictionary: \(photosDictionary)")
+//            print("photoDictionary: \(photosDictionary)")
             /* GUARD: Is "pages" key in the photosDictionary? */
-            guard let totalPages = photosDictionary[FlickrConstants.FlickrResponseKeys.Pages] as? Int else {
+            guard let _ = photosDictionary[FlickrConstants.FlickrResponseKeys.Pages] as? Int else {
                 displayError("Cannot find key '\(FlickrConstants.FlickrResponseKeys.Pages)' in \(photosDictionary)")
                 return
             }
             if let photos = photosDictionary["photo"] as? [[String : AnyObject]] {
                 for url in photos {
-                    print("key: \(url["url_m"])")
-                    self.imageURLs.append(url["url_m"] as! String)
+//                    print("key: \(url["url_m"])")
+                    let urlString = url["url_m"] as! String
+                    self.delegate?.newImageURLDownloaded(urlString)
+                    self.imageURLs.append(urlString)
                 }
-                handler(self.imageURLs, nil)
+                handler?(self.imageURLs, nil)
             }
         }
         

@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 import UIKit
-protocol PhotoDelegate {
+protocol PhotoImageLoadedDelegate {
     func imageLoaded()
 }
 
@@ -17,7 +17,7 @@ class Photo : NSManagedObject {
     @NSManaged var imageURL : String!
     @NSManaged var pin      : Pin?
     
-    var delegate            : PhotoDelegate?
+    var delegate            : PhotoImageLoadedDelegate?
     
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
@@ -35,14 +35,16 @@ class Photo : NSManagedObject {
         }
 
         set {
-            FlickrAPI.Caches.imageCache.storeImage(newValue, withIdentifier: imageURL!)
-            print("Photo: image loaded")
-            delegate?.imageLoaded()
+            if newValue != nil {
+                FlickrAPI.Caches.imageCache.storeImage(newValue, withIdentifier: imageURL!)
+                print("[Photo photoImage]: image loaded")
+                delegate?.imageLoaded()
+            }
         }
     }
     
     func startLoadingPhotoURL() {
-        print("[Photo.startLoadingPhotoURL]: loading url: \(imageURL)")
+        print("[Photo startLoadingPhotoURL]: loading url: \(imageURL)")
         if photoImage != nil {
             print("[Photo]: image already available, skipping download")
             delegate?.imageLoaded()

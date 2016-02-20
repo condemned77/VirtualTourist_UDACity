@@ -36,6 +36,7 @@ struct FlickrConstants {
         static let Text = "text"
         static let BoundingBox = "bbox"
         static let Page = "page"
+        static let SearchAccuracy = "accuracy"
     }
     
     // MARK: Flickr Parameter Values
@@ -48,6 +49,7 @@ struct FlickrConstants {
         static let GalleryID = "5704-72157622566655097"
         static let MediumURL = "url_m"
         static let UseSafeSearch = "1"
+        static let accuracyValue = "6" // accuracy = region (6)
     }
     
     // MARK: Flickr Response Keys

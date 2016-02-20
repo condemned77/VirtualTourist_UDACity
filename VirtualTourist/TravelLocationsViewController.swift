@@ -12,8 +12,11 @@ import CoreData
 
 class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
 
+    @IBOutlet weak var toolbar: UIToolbar!
     @IBOutlet weak var mapView: MKMapView!
+    @IBOutlet weak var editButton: UIBarButtonItem!
     var animateFallingPin : Bool = true
+    var deleteButtonVisible : Bool = false
     
     var mapViewIF : MapViewInterface!
     var pins : [MKPointAnnotation : Pin] = [MKPointAnnotation : Pin]()
@@ -21,10 +24,15 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         CoreDataStackManager.sharedInstance().managedObjectContext
     }()
     
+    @IBOutlet weak var containerView : UIView!
+    @IBOutlet weak var deleteButton : UIButton!
+    
     override func viewDidLoad() {
         print("TavelLocationsViewController viewDidLoad")
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        view.bringSubviewToFront(toolbar)
+        view.bringSubviewToFront(deleteButton)
         self.mapView.delegate   = self
         self.mapViewIF = MapViewInterface(withMapView: self.mapView)
         self.mapViewIF.loadPersistedMapLocation()
@@ -59,18 +67,40 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
     }
 
     
+    func deletePin(andAnnotation annotationView : MKAnnotationView) {
+        //find associated pin instance
+        for (pointAnnotation, pin) in pins {
+            print(pointAnnotation)
+            if pointAnnotation == (annotationView.annotation as! MKPointAnnotation){
+//                delete pin instance and annotation
+                mapView.removeAnnotation(pointAnnotation)
+                pins.removeValueForKey(pointAnnotation)
+                sharedContext.deleteObject(pin)
+                break
+            }
+        }
+        CoreDataStackManager.sharedInstance().saveContext()
+    }
+    
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
-        print("mapView didSelectAnnotationView")
+        guard deleteButtonVisible == false else {
+            deletePin(andAnnotation: view)
+            return
+        }
+        
+        print("[TavelLocationsViewController mapView didSelectAnnotationView]")
         mapView.deselectAnnotation(view.annotation! , animated: true)
         let photoAlbumVC = self.storyboard!.instantiateViewControllerWithIdentifier("PhotoAlbumViewController") as! PhotoAlbumViewController
         if let viewAnnotation = view.annotation {
             if viewAnnotation.isKindOfClass(MKPointAnnotation) {
                 let pointAnnotation = view.annotation! as! MKPointAnnotation
                 let pin = self.pins[pointAnnotation]
-                photoAlbumVC.photos = pin!.photos
-                photoAlbumVC.pinCoordinates = pin!.coordinates
+                print("Pin has \(pin!.photos.count) photos.")
+                
+                photoAlbumVC.pin = pin!
                 photoAlbumVC.mapViewRegion = self.mapView.region
                 self.presentViewController(photoAlbumVC, animated: true, completion: nil)
+
             } else {
                 print("MKPointAnnotation not unwrapped from MKAnnotationView, refusing to show PhotoAlbum")
             }
@@ -144,6 +174,29 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
     }
     
 
+    @IBAction func editButtonPressed(sender: UIBarButtonItem) {
+        self.togglePinDeleteButton()
+//       toggleEditButtonText()
+    }
+    
+    func toggleEditButtonText() {
+        editButton.title = "Edit"
+        editButton.title = "Done"
+    }
+    
+    func togglePinDeleteButton() {
+        var y_offset : CGFloat
+        if deleteButtonVisible {
+            y_offset = self.deleteButton.frame.height
+
+        } else {
+            y_offset = -self.deleteButton.frame.height
+        }
+        deleteButtonVisible = !deleteButtonVisible
+        UIView.animateWithDuration(1, animations: {
+            self.containerView.center = CGPoint(x: self.containerView.center.x, y: self.containerView.center.y + y_offset)
+        })
+    }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
 //        print("TravelLocationViewController: touchesBegan with event: \(event)")
