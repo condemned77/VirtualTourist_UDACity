@@ -11,14 +11,27 @@ import MapKit
 import CoreData
 
 class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, NSFetchedResultsControllerDelegate {
+
+    @IBOutlet weak var noPhotosLabel    : UILabel?
+    @IBOutlet weak var mapView          : MKMapView!
+    @IBOutlet weak var collectionView   : UICollectionView!
+    @IBOutlet weak var bottomButton     : UIBarButtonItem!
     
-    @IBOutlet weak var mapView : MKMapView!
-    @IBOutlet weak var collectionView : UICollectionView!
+    // The selected indexes array keeps all of the indexPaths for cells that are "selected". The array is
+    // used inside cellForItemAtIndexPath to lower the alpha of selected cells.  You can see how the array
+    // works by searchign through the code for 'selectedIndexes'
+    var selectedIndexes = [NSIndexPath]()
+    
+    var insertedIndexPaths  : [NSIndexPath]!
+    var deletedIndexPaths   : [NSIndexPath]!
+    var updatedIndexPaths   : [NSIndexPath]!
+    
+
     var pin : Pin!
-    var pinCoordinates : CLLocationCoordinate2D!
-//    weak var photos : NSMutableOrderedSet!
     var mapViewRegion : MKCoordinateRegion?
     var sharedContext = CoreDataStackManager.sharedInstance().managedObjectContext
+    var oldImageURLs : [String] = [String]()
+    
     
     lazy var fetchedResultsController : NSFetchedResultsController = {
         let fetchreq = NSFetchRequest(entityName: "Photo")
@@ -30,7 +43,18 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         return ctrl
     }()
 
+    /*Convenience variable for acccessing the amount of Photo instances associated to the
+    currently considered Pin instance.*/
+    var amountOfPhotos : Int {
+        let sectionInfo : NSFetchedResultsSectionInfo = self.fetchedResultsController.sections![0]
+        return sectionInfo.numberOfObjects
+    }
     
+    /*When the view is loaded, the mapview instance of this viewController is centered 
+    to the coordinates of the Pin instance associated.
+    Then the NSFetchedResultsController is used to grasp all Photo instances associated to this Pin.
+    If no Photo instances are available, the Pin instance is told to load the images that belong to these Photo instances.
+    */
     override func viewDidLoad() {
         super.viewDidLoad()
         print("[PhotoAlbumVC viewDidLoad]")
@@ -41,32 +65,90 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
 
         do {
             try self.fetchedResultsController.performFetch()
+
+            if amountOfPhotos == 0 {
+                toggleNoPhotosLabel()
+                pin.fetchNewPhotoURLs()
+            } else {
+                collectionView.reloadData()
+            }
         } catch let error {
             print("error: \(error)")
         }
     }
     
-    func newPhotoInstancesAvailable() {
-
+    /*Convenience method for toggling between displaying a label that says: "No Photos available"
+    and removing the label from this viewController.*/
+    func toggleNoPhotosLabel() {
+        if amountOfPhotos == 0 {
+            if let labelShouldBeThere = noPhotosLabel {
+                view.addSubview(labelShouldBeThere)
+            }
+        } else {
+            noPhotosLabel?.removeFromSuperview()
+        }
     }
     
+    //IBAction method to dismiss this viewController.
     @IBAction func okButtonPressed(sender: UIBarButtonItem) {
         self.dismissViewControllerAnimated(true, completion: nil)
     }
     
-    //download new photos
-    @IBAction func newCollectionPressed(sender: UIBarButtonItem) {
-        self.removeCurrentlyDisplayedImages()
-        FlickrAPI.sharedInstance().searchImagesByLatLon(forCoordinates: pinCoordinates, updateMeForEachURL: nil) {
+    /*Callback method for when the bottom button is pressed.
+    Based on whether a image has been selected, the method flow
+    decides whether a new image collection should be downloaded or
+    the selected image(s) should be deleted from the current view.
+    */
+    @IBAction func bottomButtonPressed(sender: UIBarButtonItem) {
+        if selectedIndexes.isEmpty {
+            loadNewImageCollection()
+        } else {
+            deleteSelectedImages()
+        }
+    }
+    
+    
+    /*Calling this method method removes all currently displayed images and 
+    loads new ones.*/
+    func loadNewImageCollection() {
+        guard amountOfPhotos > 0 else {print("no photos available for refresh"); return}
+        removeCurrentlyDisplayedImages()
+        loadNewImages()
+    }
+    
+    
+    /*This method first grabs all Photo
+    instances by using the NSFetchedResultsController and the the instance
+    variable selectedIndexes. Then each of the grabbed Photo instances is
+    delete from the shared context.
+    */
+    func deleteSelectedImages() {
+
+        var photosToDelete = [Photo]()
+        
+        for indexPath in selectedIndexes {
+            photosToDelete.append(fetchedResultsController.objectAtIndexPath(indexPath) as! Photo)
+        }
+        
+        for photo in photosToDelete {
+            sharedContext.deleteObject(photo)
+        }
+        
+        selectedIndexes = [NSIndexPath]()
+        toggleBottomButtonTitle()
+    }
+    
+    /*This method asks the Flickr API to search and download new image URLs based on the coordinates of the
+    Pin assigned to this viewController instance. After the download was successful, the new image urls
+    are assigned to the Photoinstances on the Pin, followed by a reload of the collection view content.*/
+    func loadNewImages() {
+        FlickrAPI.sharedInstance().searchImagesByLatLon(forCoordinates: pin.coordinates, updateMeForEachURL: nil) {
             urls, error in
-            
-            let sectionInfo : NSFetchedResultsSectionInfo = self.fetchedResultsController.sections![0]
-            let amountOfPhoto = sectionInfo.numberOfObjects
             
             let newURLs : [String] = self.findNewImageURLs(fromURLArray: urls)
             for (index, imageURL) in newURLs.enumerate() {
-                guard index < amountOfPhoto else {return}
-                let indexPath = NSIndexPath(index: index)
+                guard index < self.amountOfPhotos else {return}
+                let indexPath = NSIndexPath(forRow: index, inSection: 0)
                 let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
                 photo.imageURL = imageURL
                 dispatch_async(dispatch_get_main_queue()) {
@@ -78,23 +160,35 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     }
     
     
+    /*This method iterates over the currently available amount of Photo instances
+    and sets their photoImage instance variable to nil in order to delete the
+    associated image.
+    
+    Old image URLs are now stored in a instance variable called oldImageURLs.
+    An image URL qualifies to as 'old' if the image URL had been loaded and
+    is about to be replaced. The idea behind storing this old urls is  that
+    they could be used later on to be compared again new URLs in order to avoid
+    displaying images that have already been displayed beforehand.*/
     func removeCurrentlyDisplayedImages() {
-        let sectionInfo : NSFetchedResultsSectionInfo = self.fetchedResultsController.sections![0]
-        let amountOfPhoto = sectionInfo.numberOfObjects
-
-        for (var idx = 0; idx < amountOfPhoto; ++idx) {
-            guard idx < amountOfPhoto else {return}
-            let indexPath = NSIndexPath(index: idx)
+        
+        for (var idx = 0; idx < amountOfPhotos; ++idx) {
+            let indexPath = NSIndexPath(forRow: idx, inSection: 0)
             let photo = (fetchedResultsController.objectAtIndexPath(indexPath) as! Photo)
             photo.photoImage = nil
+            oldImageURLs.append(photo.imageURL)
         }
         collectionView.reloadData()
     }
     
     
+    /*This method takes the URLs contained in the urlArray and comapares each url
+    with the urls of images that are currenly displayed in the collection view.
+    Due to this, it should be avoided that photos are displayed that are currently 
+    visible.*/
     func findNewImageURLs(fromURLArray urlArray : [String]) -> [String]{
         var freshImageURLs : [String] = [String]()
         for url in urlArray {
+            guard freshImageURLs.count < amountOfPhotos else {print("\(amountOfPhotos) new urls are enough, stopping to find more new urls."); break}
             if urlIsCurrentlyDisplayed(url) {
                 continue
             } else {
@@ -104,13 +198,14 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         return freshImageURLs
     }
     
+    
+    /*This method takes a url string and compares it to the urls of images that are currenlty displayed.
+    If a passed in url string is already dispalyed (as an image) then true is returned, else false.*/
     func urlIsCurrentlyDisplayed(url : String) -> Bool{
-        let sectionInfo : NSFetchedResultsSectionInfo = self.fetchedResultsController.sections![0]
-        let amountOfPhoto = sectionInfo.numberOfObjects
-
-        for (var idx = 0; idx < amountOfPhoto; ++idx) {
-            guard idx < amountOfPhoto else {return false}
-            let indexPath = NSIndexPath(index: idx)
+        
+        for (var idx = 0; idx < amountOfPhotos; ++idx) {
+            guard idx < amountOfPhotos else {return false}
+            let indexPath = NSIndexPath(forRow: idx, inSection: 0)
             let photo = fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
             if photo.imageURL == url {
                 return true
@@ -119,46 +214,115 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         return false
     }
     
-    
+    /*Callback method that return the amount of photos currently asscoiates to this viewController.*/
     internal func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("[PhotoAlbumViewController collectionView numbersOfItemsInSection]")
-        let sectionInfo : NSFetchedResultsSectionInfo = self.fetchedResultsController.sections![section]
-        return sectionInfo.numberOfObjects
+        if amountOfPhotos > 0 {toggleNoPhotosLabel()}
+        return amountOfPhotos
     }
     
     
     // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
     internal func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         print("collectionView cellForItemAtIndexPath")
-        let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
         let cell : PhotoCell = collectionView.dequeueReusableCellWithReuseIdentifier("PhotoCell", forIndexPath: indexPath) as! PhotoCell
-        
-        configureCell(cell, photo: photo)
+        configureCell(cell, atIndexPath: indexPath)
     
         return cell
     }
     
-    func configureCell(cell : PhotoCell, photo : Photo) {
+    /*Callback method that is called if a cell of the collection view is touched. If so, the 
+    cell is visually marked, by changing it's alpha value. If a cell is selected it's possible to 
+    delete it by pressing a button at the bottom of the view, which will be activated as soon
+    as any cell is touched. This button will be activated by calling the method toggleBottomButtonTitle*/
+    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+        
+        let cell = collectionView.cellForItemAtIndexPath(indexPath) as! PhotoCell
+        
+        // Whenever a cell is tapped we will toggle its presence in the selectedIndexes array
+        if let index = selectedIndexes.indexOf(indexPath) {
+            selectedIndexes.removeAtIndex(index)
+        } else {
+            selectedIndexes.append(indexPath)
+        }
+        
+        // Then reconfigure the cell
+        configureCell(cell, atIndexPath: indexPath)
+        
+        // And update the bottom button
+        toggleBottomButtonTitle()
+    }
+    
+    
+    /*This method changes the title of the button located at the bottom of the viewController.
+    The title is based on whether a cell is touched by the user or not. If at least on cell is touched,
+    the content of sectedIndexes is > 0.*/
+    func toggleBottomButtonTitle() {
+        if selectedIndexes.count > 0 {
+            bottomButton.title = "Remove Selected Pictures"
+        } else {
+            bottomButton.title = "New Collection"
+        }
+    }
+    
+    /*Convenience method for configuring a cell of the UICollectionView instance.
+    This method loads a placeholder image to the cell if no image has been loaded
+    to an associated Photo instance (a PhotoCell instance has a Photo instance 
+    associated as an instance variable). If a placeholder is displayed also an
+    activityIndicator is placed on top in order to signal that a image is currently loaded.
+    Loading such an image is also triggered in any case. This doesn't that an image is 
+    loaded form the internet, it may also be present in the local cache.*/
+    func configureCell(cell : PhotoCell, atIndexPath indexPath : NSIndexPath) {
+        let photo = fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
         if cell.image == nil {
             cell.loadPlaceholderImage()
         }
         cell.activityIndicator?.startAnimating()
         photo.startLoadingPhotoURL()
         cell.photo = photo
+        if let _ = selectedIndexes.indexOf(indexPath) {
+            cell.alpha = 0.05
+        } else {
+            cell.alpha = 1.0
+        }
     }
 
+    //Callback method of UICollectionViewDataSource
+    //In this app we only work with one section.
     internal func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
         return 1
     }
-    
+
+    //Callback method of NSFetchedResultsControllerDelegate
     func controllerWillChangeContent(controller: NSFetchedResultsController) {
-
+        print("[PhotoAlbumViewController controllerWillChangeContent]")
+        insertedIndexPaths  = [NSIndexPath]()
+        deletedIndexPaths   = [NSIndexPath]()
+        updatedIndexPaths   = [NSIndexPath]()
     }
     
+    //Callback method of NSFetchedResultsControllerDelegate
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
-
+        print("in controllerDidChangeContent. changes.count: \(insertedIndexPaths.count + deletedIndexPaths.count)")
+        
+        collectionView.performBatchUpdates({() -> Void in
+            
+            for indexPath in self.insertedIndexPaths {
+                self.collectionView.insertItemsAtIndexPaths([indexPath])
+            }
+            
+            for indexPath in self.deletedIndexPaths {
+                self.collectionView.deleteItemsAtIndexPaths([indexPath])
+            }
+            
+            for indexPath in self.updatedIndexPaths {
+                self.collectionView.reloadItemsAtIndexPaths([indexPath])
+            }
+            
+            }, completion: nil)
     }
     
+    //Callback method of NSFetchedResultsControllerDelegate
     func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType) {
         
         switch type {
@@ -172,24 +336,26 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
             return
         }
     }
-    
+    //Callback method of NSFetchedResultsControllerDelegate
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
         print("didChangeObject: \(anObject) atIndexPath: \(indexPath) forChangeType: \(type) newIndexPath: \(newIndexPath)")
         
         switch type {
         case .Insert:
-            self.collectionView.insertItemsAtIndexPaths([newIndexPath!])
+            print("Insert an item")
+            insertedIndexPaths.append(newIndexPath!)
             break
         case .Delete:
-            self.collectionView.deleteItemsAtIndexPaths([indexPath!])
+            print("Delete an item")
+            deletedIndexPaths.append(indexPath!)
+            break
         case .Move:
-            self.collectionView.deleteItemsAtIndexPaths([indexPath!])
-            self.collectionView.insertItemsAtIndexPaths([newIndexPath!])
+            print("Move and item. Shouldn't happen.")
+            break
         case .Update:
-//            let photo = self.fetchedResultsController.objectAtIndexPath(indexPath!) as! Photo
-//            let cell = self.collectionView.cellForItemAtIndexPath(indexPath!) as! PhotoCell
-            self.collectionView.insertItemsAtIndexPaths([indexPath!])
+            print("Update an item.")
+            updatedIndexPaths.append(indexPath!)
+            break
         }
     }
-
 }

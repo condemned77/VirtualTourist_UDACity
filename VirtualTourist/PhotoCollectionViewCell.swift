@@ -21,7 +21,7 @@ class PhotoCell : UICollectionViewCell, PhotoImageLoadedDelegate {
             }
         }
     }
-    var image : UIImage? {
+    weak var image : UIImage? {
         set (newImage) {
             self.imageView!.image = newImage
         }
@@ -33,6 +33,9 @@ class PhotoCell : UICollectionViewCell, PhotoImageLoadedDelegate {
     @IBOutlet var imageView: UIImageView!
     @IBOutlet var activityIndicator: UIActivityIndicatorView!
     
+    /*Constructor of the PhotoCell.
+    If the current instance is missing an assigned imageView, a placeholder
+    image is displayed instead.*/
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         print("PhotoCell instantiating: imageView(\(imageView)) and activityIndicator(\(activityIndicator)) should be instantiated too")
@@ -47,11 +50,15 @@ class PhotoCell : UICollectionViewCell, PhotoImageLoadedDelegate {
         }
     }
     
+    /*Initialiser method for the placeholder image.
+    The placehodler image is also somewhat translucient.*/
     func loadPlaceholderImage() {
         image = UIImage(named: "Placeholder")!
         imageView.alpha = 0.3
     }
     
+    /*Convenience method that loads the image that is stored in the instance variable photo.
+    Also the acitivity indicator, is stopped and removed from the view.*/
     func showImageView() {
         imageView!.image = photo!.photoImage
         self.bringSubviewToFront(imageView)
@@ -60,6 +67,9 @@ class PhotoCell : UICollectionViewCell, PhotoImageLoadedDelegate {
     }
     
     
+    /*Implementation of the delegate method of the PhotoImageLoadedDelegate protocol (in the Photo class).
+    As soon as the method is invoked, a image has been made available from the Photo instance and is immediately exchanged
+    with the currently visible placeholder image.*/
     func imageLoaded() {
         print("[PhotoColectionViewCell]: imageLoaded")
         activityIndicator?.stopAnimating()

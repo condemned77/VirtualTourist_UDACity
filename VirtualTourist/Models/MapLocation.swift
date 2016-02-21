@@ -11,6 +11,7 @@ import UIKit
 import CoreData
 import MapKit
 
+/*This class is supposed to provide means to persist the map location a user has navigated to.*/
 class MapLocation : NSManagedObject {
     @NSManaged var longitude        : Double
     @NSManaged var latitude         : Double

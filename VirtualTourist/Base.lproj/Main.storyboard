@@ -126,13 +126,19 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No Photos available" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="efC-6b-6kq">
+                                <rect key="frame" x="225" y="290.5" width="150.5" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QRb-dQ-cNX" userLabel="BottomToolbar">
                                 <rect key="frame" x="0.0" y="556" width="600" height="44"/>
                                 <items>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="sYT-Xc-Jnk"/>
                                     <barButtonItem title="New Collection" id="PRw-3P-bhZ">
                                         <connections>
-                                            <action selector="newCollectionPressed:" destination="jvk-W8-iGa" id="NMn-UB-dyQ"/>
+                                            <action selector="bottomButtonPressed:" destination="jvk-W8-iGa" id="zIJ-7m-2Jr"/>
                                         </connections>
                                     </barButtonItem>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="8WZ-I7-zvp"/>
@@ -150,9 +156,6 @@
                                     </navigationItem>
                                 </items>
                             </navigationBar>
-                            <mapView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" mapType="standard" scrollEnabled="NO" rotateEnabled="NO" pitchEnabled="NO" showsBuildings="NO" showsPointsOfInterest="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aQz-Js-k3x">
-                                <rect key="frame" x="0.0" y="44" width="600" height="120"/>
-                            </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Q50-5S-FBR">
                                 <rect key="frame" x="0.0" y="164" width="600" height="392"/>
                                 <color key="backgroundColor" red="0.0" green="0.66090106959999995" blue="0.99482482670000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -211,6 +214,9 @@
                                     <outlet property="delegate" destination="jvk-W8-iGa" id="2YU-MP-IAA"/>
                                 </connections>
                             </collectionView>
+                            <mapView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" mapType="standard" zoomEnabled="NO" scrollEnabled="NO" rotateEnabled="NO" pitchEnabled="NO" showsBuildings="NO" showsPointsOfInterest="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aQz-Js-k3x">
+                                <rect key="frame" x="0.0" y="44" width="600" height="120"/>
+                            </mapView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -219,7 +225,9 @@
                             <constraint firstAttribute="trailingMargin" secondItem="aQz-Js-k3x" secondAttribute="trailing" constant="-20" id="5xl-We-yVb"/>
                             <constraint firstItem="ggx-eI-LWJ" firstAttribute="top" secondItem="gSi-Gc-KID" secondAttribute="topMargin" id="7sF-GB-pah"/>
                             <constraint firstItem="Q50-5S-FBR" firstAttribute="top" secondItem="aQz-Js-k3x" secondAttribute="bottom" id="E5q-M8-k4c"/>
+                            <constraint firstItem="efC-6b-6kq" firstAttribute="centerX" secondItem="gSi-Gc-KID" secondAttribute="centerX" id="K53-Pg-RCQ"/>
                             <constraint firstItem="Q50-5S-FBR" firstAttribute="leading" secondItem="gSi-Gc-KID" secondAttribute="leadingMargin" constant="-20" id="LMe-xt-Z21"/>
+                            <constraint firstItem="efC-6b-6kq" firstAttribute="centerY" secondItem="gSi-Gc-KID" secondAttribute="centerY" id="T3Y-Th-taa"/>
                             <constraint firstItem="ggx-eI-LWJ" firstAttribute="leading" secondItem="gSi-Gc-KID" secondAttribute="leadingMargin" constant="-20" id="ZJM-bO-bEy"/>
                             <constraint firstItem="nau-dP-ViS" firstAttribute="top" secondItem="QRb-dQ-cNX" secondAttribute="bottom" id="f7c-f7-lQh"/>
                             <constraint firstItem="QRb-dQ-cNX" firstAttribute="leading" secondItem="gSi-Gc-KID" secondAttribute="leadingMargin" constant="-20" id="gXH-4u-Xms"/>
@@ -231,8 +239,10 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="bottomButton" destination="PRw-3P-bhZ" id="nSq-ds-Q3V"/>
                         <outlet property="collectionView" destination="Q50-5S-FBR" id="gZV-cZ-giZ"/>
                         <outlet property="mapView" destination="aQz-Js-k3x" id="3a4-Vc-vLA"/>
+                        <outlet property="noPhotosLabel" destination="efC-6b-6kq" id="V2g-Xv-Yer"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="SLS-fT-CI5" userLabel="First Responder" sceneMemberID="firstResponder"/>

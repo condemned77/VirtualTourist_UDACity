@@ -40,6 +40,8 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
     
+    /*A pin can only be instantiated by providing coordinates.
+    Also an instantiation automatically triggeres downloading of new image urls from Flickr.*/
     init(withCoordiantes coordinates : CLLocationCoordinate2D, andContext context: NSManagedObjectContext) {
         let entity = NSEntityDescription.entityForName("Pin", inManagedObjectContext: context)
         super.init(entity: entity!, insertIntoManagedObjectContext: context)
@@ -48,44 +50,49 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
     }
     
     
+    /*This method uses the FlickrAPI to download new image urls. A status variable keeps
+    track about whether currently image urls are downloaded.*/
     func fetchNewPhotoURLs() -> Bool{
         guard currentlyFetchingPhotoURLs == false else {print("already fetching photo urls."); return false}
         currentlyFetchingPhotoURLs = true
         flickrAPI.searchImagesByLatLon(forCoordinates: coordinates, updateMeForEachURL: self) {
             urls, error in
             guard error == nil else {print("error while downloading image urls from flickr: \(error)"); self.currentlyFetchingPhotoURLs = false; return}
-//            for (index, url) in urls.enumerate() {
-//                guard index < self.photos.count else {return}
-//                (self.photos.objectAtIndex(index) as! Photo).imageURL = url
-//            }
             self.currentlyFetchingPhotoURLs = false
         }
         return true
     }
     
-    /*  Creates new image if necessary, else don't care for instantioation
+    /*  Creates new image if necessary, else don't care for instantiation
         and just wait for the rest of urls to be downloaded and update images
         later. 
     */
     func newImageURLDownloaded(urlString : String) {
         if photos.count < Constants.maxAmountOfPhotos {
-            createNewImage(withUrl: urlString)
+            createNewPhoto(withUrl: urlString)
         }
     }
     
     
+    /*This method creates new Photo instances and assigns image urls stored in its argument.*/
     func addImageURLs(urls: [String]) {
         for (index, url) in urls.enumerate() {
             guard index < Constants.maxAmountOfPhotos else {print("[Pin addImageURLs] Amount of displayed photos is limited to \(Constants.maxAmountOfPhotos)"); return}
-            createNewImage(withUrl: url)
+            createNewPhoto(withUrl: url)
         }
     }
     
     
-    func createNewImage(withUrl urlString : String) {
+    /*Convenience method for creating a new Photo instance. By design, each Pin instance can only hold
+    21 Photo instances. A Photo instance can only be created with an imageURL (type: String).
+    After a Photo instance has been created it is stored in the instance variable photos, followed by
+    saving the core data context, and thus persisting the Photo instance.
+    */
+    func createNewPhoto(withUrl urlString : String) {
         print("[Pin createNewImage]: pin is holding \(photos.count) Photos. (shouldn't be over \(Constants.maxAmountOfPhotos))")
         guard photos.count < Constants.maxAmountOfPhotos else {print("[Pin createNewImage] Amount of displayed photos is limited to \(Constants.maxAmountOfPhotos)"); return}
         let photo = Photo(withPin: self, andContext: sharedContext)
+        print("created new Photo instance with URL: \(urlString) ")
         photo.imageURL = urlString
         photo.startLoadingPhotoURL()
         photos.addObject(photo)
@@ -94,10 +101,13 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
     }
     
     
+    /*This method allows for exchanging imageURLs that are currently associented with Photo instances, by passing in
+    an array of new imageURLs as type string.*/
     func updateImageURLs(urls : [String]) {
         for (index, url) in urls.enumerate() {
             guard index < Constants.maxAmountOfPhotos else {print("[Pin addImageURLs] Amount of displayed photos is limited to \(Constants.maxAmountOfPhotos)"); return}
             (self.photos.objectAtIndex(index) as! Photo).imageURL = url
         }
+        CoreDataStackManager.sharedInstance().saveContext()
     }
 }

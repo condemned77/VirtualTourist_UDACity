@@ -33,12 +33,15 @@ class FlickrAPI: NSObject {
         static let imageCache = ImageCache()
     }
 
-    
+    /*Convenience method for converting assigned longitude and latitude into a CLLocationCoordinate2D instance.*/
     private func createCoordinates() -> CLLocationCoordinate2D {
         let coordinates : CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: self.latitude!, longitude: self.longitude!)
         return coordinates
     }
     
+    /*Conveniene method for spanning a so called bounding box over a certain location. This location is based on the coordinates
+    (longitude and latitude) that are assigned to the Flickr sharedInstance. Basically by using a single coordinate, a whole
+    area is created in order to enlarge the area to be searched for Flickr photos.*/
     private func bboxString() -> String{
         /* Fix added to ensure box is bounded by minimum and maximums */
         let bottom_left_lon = max(self.longitude! - FlickrConstants.Flickr.SearchBBoxHalfWidth, FlickrConstants.Flickr.SearchLonRange.0)
@@ -49,7 +52,23 @@ class FlickrAPI: NSObject {
         return "\(bottom_left_lon),\(bottom_left_lat),\(top_right_lon),\(top_right_lat)"
     }
     
-
+    
+    /*Convenience method for searching photo images based on provided coordinates. The method also takes a delegate, that
+    is notified each time a single image url has been parsed, i.e. is available.
+    In order to query the FlickrAPI for photos, multiple parameter are setup in this method.
+    - method: the first request parameter is called method which designates the functionality (provided by the flickr API) that the request is addressing.
+    - APIKey: the APIKey identifies the origin that executes the call. This means, every request has to be done using such an APIKey. An origin can be an application.
+    - BoundingBox: see method bboxString()
+    - SafeSearch: use flickr censoring or not.
+    - extras: this parameter accepts a few extra commands which allow for enriching the photo related data sets.
+    E.g.: description, license, date_upload, date_taken, owner_name, icon_server, original_format, last_update, geo, tags, machine_tags, o_dims, views, media, path_alias, url_sq, url_t, url_s, url_q, url_m, url_n, url_z, url_c, url_l, url_o
+    - format: determines the data format which the response should have. As far as knowledge goes, json and xml are most common.
+    - nojsoncallback: The JSON is valid javascript, i.e. it describes a javascript object. Based on how the json response shall be processed, it’s possible to wrap the JSON response into a function, called callback which can be executed directly including the data of the JSON response. When this isn’t needed, the request parameter nojsoncallback=1 should be inserted. (From the flickr API description:
+    If you just want the raw JSON, with no function wrapper, add the parameter nojsoncallback with a value of 1 to your request.)
+    - SearchAccuracy: Recorded accuracy level of the location information. Current range is 1-16 : used is 6 for region accuracy.
+    Additional information:
+    - The parameter order is arbitrary.
+    */
     func searchImagesByLatLon(forCoordinates coor : CLLocationCoordinate2D, updateMeForEachURL delegate : ImageURLDownloadedDelegate?, completionHandler : (([String], NSError?) -> Void)?) {
         print("searching photos for coordinates: \(coor)")
         self.photoCoordinates = coor
@@ -69,6 +88,8 @@ class FlickrAPI: NSObject {
         }
     }
 
+    /*This method starts downloading Flickr images basd on the parameter passed in. It handles various error scenarios
+    and executes a completion handler after image urls have been downloaded and parsed.*/
     private func downloadImageData(withParameter methodParameters: [String:AnyObject], withCompletionHandler handler : (([String], NSError?) -> Void)?) {
         
         // create session and request
@@ -81,11 +102,6 @@ class FlickrAPI: NSObject {
             // if an error occurs, print it and re-enable the UI
             func displayError(error: String) {
                 print(error)
-//                performUIUpdatesOnMain {
-//                    self.setUIEnabled(true)
-//                    self.photoTitleLabel.text = "No photo returned. Try again."
-//                    self.photoImageView.image = nil
-//                }
             }
             
             /* GUARD: Was there an error? */
@@ -147,6 +163,9 @@ class FlickrAPI: NSObject {
         // start the task!
         task.resume()
     }
+    
+    
+    /*Convenience methdo for assembling a URL from passed in parameters.*/
     private func flickrURLFromParameters(parameters: [String:AnyObject]) -> NSURL {
         
         let components = NSURLComponents()
@@ -163,6 +182,7 @@ class FlickrAPI: NSObject {
         return components.URL!
     }
     
+    /*A FlickrAPI instance should only exist once.*/
     class func sharedInstance() -> FlickrAPI {
         struct Static {
             static let sharedInstance = FlickrAPI()
