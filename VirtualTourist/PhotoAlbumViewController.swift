@@ -151,23 +151,24 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     Pin assigned to this viewController instance. After the download was successful, the new image urls
     are assigned to the Photoinstances on the Pin, followed by a reload of the collection view content.*/
     func loadNewImages() {
-        FlickrAPI.sharedInstance().searchImagesByLatLon(forCoordinates: pin.coordinates, updateMeForEachURL: nil) {
-            urls, error in
-            
-            let newURLs : [String : String] = self.findNewImageURLs(fromURLDict: urls)
-            var index = 0
-            for (imageID, imageURL) in newURLs {
-                dispatch_async(dispatch_get_main_queue()) {
-                    let indexPath = NSIndexPath(forRow: index, inSection: 0)
-                    let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
-                    photo.imageURL = imageURL
-                    photo.imageID = imageID
-                    photo.startLoadingPhotoURL()
-                    ++index
-                }
-            }
+        pin.fetchNewPhotoURLs()
+//        FlickrAPI.sharedInstance().searchImagesByLatLon(forCoordinates: pin.coordinates, updateMeForEachURL: nil) {
+//            urls, error in
+//            
+//            let newURLs : [String : String] = self.findNewImageURLs(fromURLDict: urls)
+//            var index = 0
+//            for (imageID, imageURL) in newURLs {
+//                dispatch_async(dispatch_get_main_queue()) {
+//                    let indexPath = NSIndexPath(forRow: index, inSection: 0)
+//                    let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
+//                    photo.imageURL = imageURL
+//                    photo.imageID = imageID
+//                    photo.startLoadingPhotoURL()
+//                    ++index
+//                }
+//            }
             self.collectionView.reloadData()
-        }
+//        }
     }
     
     
