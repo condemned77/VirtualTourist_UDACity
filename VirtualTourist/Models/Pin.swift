@@ -67,20 +67,22 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
         and just wait for the rest of urls to be downloaded and update images
         later. 
     */
-    func newImageURLDownloaded(urlString : String) {
-        if photos.count < Constants.maxAmountOfPhotos {
-            createNewPhoto(withUrl: urlString)
+    func newImageURLDownloaded(urlString : String, withPhotoID: String) {
+        sharedContext.performBlockAndWait() {
+            if self.photos.count < Constants.maxAmountOfPhotos {
+                self.createNewPhoto(withUrl: urlString, andPhotoID: withPhotoID)
+            }
         }
     }
     
     
     /*This method creates new Photo instances and assigns image urls stored in its argument.*/
-    func addImageURLs(urls: [String]) {
-        for (index, url) in urls.enumerate() {
-            guard index < Constants.maxAmountOfPhotos else {print("[Pin addImageURLs] Amount of displayed photos is limited to \(Constants.maxAmountOfPhotos)"); return}
-            createNewPhoto(withUrl: url)
-        }
-    }
+//    func addImageURLs(urls: [String]) {
+//        for (index, url) in urls.enumerate() {
+//            guard index < Constants.maxAmountOfPhotos else {print("[Pin addImageURLs] Amount of displayed photos is limited to \(Constants.maxAmountOfPhotos)"); return}
+//            createNewPhoto(withUrl: url)
+//        }
+//    }
     
     
     /*Convenience method for creating a new Photo instance. By design, each Pin instance can only hold
@@ -88,16 +90,18 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
     After a Photo instance has been created it is stored in the instance variable photos, followed by
     saving the core data context, and thus persisting the Photo instance.
     */
-    func createNewPhoto(withUrl urlString : String) {
+    func createNewPhoto(withUrl urlString : String, andPhotoID photoID : String) {
         print("[Pin createNewImage]: pin is holding \(photos.count) Photos. (shouldn't be over \(Constants.maxAmountOfPhotos))")
         guard photos.count < Constants.maxAmountOfPhotos else {print("[Pin createNewImage] Amount of displayed photos is limited to \(Constants.maxAmountOfPhotos)"); return}
-        let photo = Photo(withPin: self, andContext: sharedContext)
-        print("created new Photo instance with URL: \(urlString) ")
-        photo.imageURL = urlString
-        photo.startLoadingPhotoURL()
-        photos.addObject(photo)
-        delegate?.newPhotoInstancesAvailable()
-        CoreDataStackManager.sharedInstance().saveContext()
+        sharedContext.performBlockAndWait({
+            let photo = Photo(withPin: self, imageURL: urlString, andContext: self.sharedContext)
+            print("created new Photo instance with URL: \(urlString) ")
+            photo.imageID = photoID
+            photo.startLoadingPhotoURL()
+            self.photos.addObject(photo)
+            self.delegate?.newPhotoInstancesAvailable()
+            CoreDataStackManager.sharedInstance().saveContext()
+        })
     }
     
     

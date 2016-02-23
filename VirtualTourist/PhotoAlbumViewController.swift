@@ -19,7 +19,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     
     // The selected indexes array keeps all of the indexPaths for cells that are "selected". The array is
     // used inside cellForItemAtIndexPath to lower the alpha of selected cells.  You can see how the array
-    // works by searchign through the code for 'selectedIndexes'
+    // works by searching through the code for 'selectedIndexes'
     var selectedIndexes = [NSIndexPath]()
     
     var insertedIndexPaths  : [NSIndexPath]!
@@ -43,12 +43,17 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         return ctrl
     }()
 
-    /*Convenience variable for acccessing the amount of Photo instances associated to the
+    
+    /*Convenience variable for accessing the amount of Photo instances associated to the
     currently considered Pin instance.*/
     var amountOfPhotos : Int {
-        let sectionInfo : NSFetchedResultsSectionInfo = self.fetchedResultsController.sections![0]
+        var sectionInfo : NSFetchedResultsSectionInfo!
+        sharedContext.performBlockAndWait {
+            sectionInfo = self.fetchedResultsController.sections![0]
+        }
         return sectionInfo.numberOfObjects
     }
+    
     
     /*When the view is loaded, the mapview instance of this viewController is centered 
     to the coordinates of the Pin instance associated.
@@ -77,6 +82,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         }
     }
     
+    
     /*Convenience method for toggling between displaying a label that says: "No Photos available"
     and removing the label from this viewController.*/
     func toggleNoPhotosLabel() {
@@ -89,10 +95,12 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         }
     }
     
+    
     //IBAction method to dismiss this viewController.
     @IBAction func okButtonPressed(sender: UIBarButtonItem) {
         self.dismissViewControllerAnimated(true, completion: nil)
     }
+    
     
     /*Callback method for when the bottom button is pressed.
     Based on whether a image has been selected, the method flow
@@ -138,6 +146,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         toggleBottomButtonTitle()
     }
     
+    
     /*This method asks the Flickr API to search and download new image URLs based on the coordinates of the
     Pin assigned to this viewController instance. After the download was successful, the new image urls
     are assigned to the Photoinstances on the Pin, followed by a reload of the collection view content.*/
@@ -145,14 +154,16 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         FlickrAPI.sharedInstance().searchImagesByLatLon(forCoordinates: pin.coordinates, updateMeForEachURL: nil) {
             urls, error in
             
-            let newURLs : [String] = self.findNewImageURLs(fromURLArray: urls)
-            for (index, imageURL) in newURLs.enumerate() {
-                guard index < self.amountOfPhotos else {return}
-                let indexPath = NSIndexPath(forRow: index, inSection: 0)
-                let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
-                photo.imageURL = imageURL
+            let newURLs : [String : String] = self.findNewImageURLs(fromURLDict: urls)
+            var index = 0
+            for (imageID, imageURL) in newURLs {
                 dispatch_async(dispatch_get_main_queue()) {
+                    let indexPath = NSIndexPath(forRow: index, inSection: 0)
+                    let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
+                    photo.imageURL = imageURL
+                    photo.imageID = imageID
                     photo.startLoadingPhotoURL()
+                    ++index
                 }
             }
             self.collectionView.reloadData()
@@ -185,36 +196,41 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     with the urls of images that are currenly displayed in the collection view.
     Due to this, it should be avoided that photos are displayed that are currently 
     visible.*/
-    func findNewImageURLs(fromURLArray urlArray : [String]) -> [String]{
-        var freshImageURLs : [String] = [String]()
-        for url in urlArray {
+    func findNewImageURLs(fromURLDict urlDict : [String : String]) -> [String : String]{
+        var freshImageURLs : [String : String] = [String : String]()
+        for (imageID, url) in urlDict {
             guard freshImageURLs.count < amountOfPhotos else {print("\(amountOfPhotos) new urls are enough, stopping to find more new urls."); break}
             if urlIsCurrentlyDisplayed(url) {
                 continue
             } else {
-                freshImageURLs.append(url)
+                freshImageURLs[imageID] = url
             }
         }
         return freshImageURLs
     }
     
     
-    /*This method takes a url string and compares it to the urls of images that are currenlty displayed.
-    If a passed in url string is already dispalyed (as an image) then true is returned, else false.*/
+    /*This method takes a url string and compares it to the urls of images that are currently displayed.
+    If a passed in url string is already displayed (as an image) then true is returned, else false.*/
     func urlIsCurrentlyDisplayed(url : String) -> Bool{
         
         for (var idx = 0; idx < amountOfPhotos; ++idx) {
             guard idx < amountOfPhotos else {return false}
             let indexPath = NSIndexPath(forRow: idx, inSection: 0)
-            let photo = fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
-            if photo.imageURL == url {
+            var imageURL : String!
+            sharedContext.performBlockAndWait() {
+                imageURL = (self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo).imageURL
+            }
+            
+            if imageURL == url {
                 return true
             }
         }
         return false
     }
     
-    /*Callback method that return the amount of photos currently asscoiates to this viewController.*/
+    
+    /*Callback method that return the amount of photos currently associates to this viewController.*/
     internal func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("[PhotoAlbumViewController collectionView numbersOfItemsInSection]")
         if amountOfPhotos > 0 {toggleNoPhotosLabel()}
@@ -230,6 +246,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     
         return cell
     }
+    
     
     /*Callback method that is called if a cell of the collection view is touched. If so, the 
     cell is visually marked, by changing it's alpha value. If a cell is selected it's possible to 
@@ -256,7 +273,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     
     /*This method changes the title of the button located at the bottom of the viewController.
     The title is based on whether a cell is touched by the user or not. If at least on cell is touched,
-    the content of sectedIndexes is > 0.*/
+    the content of selectedIndexes is > 0.*/
     func toggleBottomButtonTitle() {
         if selectedIndexes.count > 0 {
             bottomButton.title = "Remove Selected Pictures"
@@ -264,6 +281,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
             bottomButton.title = "New Collection"
         }
     }
+    
     
     /*Convenience method for configuring a cell of the UICollectionView instance.
     This method loads a placeholder image to the cell if no image has been loaded
@@ -278,8 +296,9 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
             cell.loadPlaceholderImage()
         }
         cell.activityIndicator?.startAnimating()
-        photo.startLoadingPhotoURL()
         cell.photo = photo
+        photo.startLoadingPhotoURL()
+
         if let _ = selectedIndexes.indexOf(indexPath) {
             cell.alpha = 0.05
         } else {
@@ -287,12 +306,14 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         }
     }
 
+    
     //Callback method of UICollectionViewDataSource
     //In this app we only work with one section.
     internal func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
         return 1
     }
 
+    
     //Callback method of NSFetchedResultsControllerDelegate
     func controllerWillChangeContent(controller: NSFetchedResultsController) {
         print("[PhotoAlbumViewController controllerWillChangeContent]")
@@ -300,6 +321,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         deletedIndexPaths   = [NSIndexPath]()
         updatedIndexPaths   = [NSIndexPath]()
     }
+    
     
     //Callback method of NSFetchedResultsControllerDelegate
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
@@ -322,6 +344,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
             }, completion: nil)
     }
     
+    
     //Callback method of NSFetchedResultsControllerDelegate
     func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType) {
         
@@ -336,6 +359,8 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
             return
         }
     }
+    
+    
     //Callback method of NSFetchedResultsControllerDelegate
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
         print("didChangeObject: \(anObject) atIndexPath: \(indexPath) forChangeType: \(type) newIndexPath: \(newIndexPath)")
@@ -350,7 +375,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
             deletedIndexPaths.append(indexPath!)
             break
         case .Move:
-            print("Move and item. Shouldn't happen.")
+            print("Move an item. Shouldn't happen.")
             break
         case .Update:
             print("Update an item.")

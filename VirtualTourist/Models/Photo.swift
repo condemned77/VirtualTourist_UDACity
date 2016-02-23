@@ -15,6 +15,7 @@ protocol PhotoImageLoadedDelegate {
 
 class Photo : NSManagedObject {
     @NSManaged var imageURL : String!
+    @NSManaged var imageID  : String!
     @NSManaged var pin      : Pin?
     
     var delegate            : PhotoImageLoadedDelegate?
@@ -23,20 +24,21 @@ class Photo : NSManagedObject {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
     
-    init(withPin pin : Pin, andContext context : NSManagedObjectContext) {
+    init(withPin pin : Pin, imageURL : String, andContext context : NSManagedObjectContext) {
         let entity = NSEntityDescription.entityForName("Photo", inManagedObjectContext: context)!
         super.init(entity: entity, insertIntoManagedObjectContext: context)
         self.pin = pin
+        self.imageURL = imageURL
     }
     
     var photoImage : UIImage? {
         get {
-            return FlickrAPI.Caches.imageCache.imageWithIdentifier(imageURL)
+            return FlickrAPI.Caches.imageCache.imageWithIdentifier(imageID)
         }
 
         set {
             if newValue != nil {
-                FlickrAPI.Caches.imageCache.storeImage(newValue, withIdentifier: imageURL!)
+                FlickrAPI.Caches.imageCache.storeImage(newValue, withIdentifier: imageID!)
                 print("[Photo photoImage]: image loaded")
                 delegate?.imageLoaded()
             }
@@ -46,7 +48,7 @@ class Photo : NSManagedObject {
     func startLoadingPhotoURL() {
         print("[Photo startLoadingPhotoURL]: loading url: \(imageURL)")
         if photoImage != nil {
-            print("[Photo]: image already available, skipping download")
+            print("[Photo]: image \(imageID) already available, skipping download")
             delegate?.imageLoaded()
             return
         }

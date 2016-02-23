@@ -61,6 +61,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         }
     }
     
+    
     /*Adding the passed in pin to map after app start. In order to do so,
     the coordinates of a Pin instances are passed used when calling the method addPinToMap().
     Then, the pin instance and it's associated annotation on the map are stored in a instance variable
@@ -73,6 +74,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
             self.pins[addedPointAnnotation] = pin
         }
     }
+    
     
     /*This method has been implemented for testing purposes, in order to 'hard center' the mapView to the 
     coordinates 0.0 / 0,0.*/
@@ -151,7 +153,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId) as? MKPinAnnotationView
         if pinView == nil {
             pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-            pinView!.pinTintColor = UIColor.redColor()
+            pinView!.pinTintColor   = UIColor.redColor()
             pinView!.canShowCallout = false
         }
         else {
@@ -194,6 +196,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         case .Ended:
             print("State ended")
             let pin = Pin(withCoordiantes: locationCoordinate, andContext: sharedContext)
+            pin.fetchNewPhotoURLs()
             pins[self.mapViewIF.lastPinSetToMap!] = pin
             mapViewIF.lastPinSetToMap = nil
             CoreDataStackManager.sharedInstance().saveContext()

@@ -10,14 +10,14 @@ import Foundation
 import MapKit
 
 protocol ImageURLDownloadedDelegate {
-    func newImageURLDownloaded(urlString : String);
+    func newImageURLDownloaded(urlString : String, withPhotoID: String);
 }
 
 class FlickrAPI: NSObject {
-    var imageURLs : [String] = [String]()
-    var longitude : Double?
-    var latitude : Double?
-    var delegate : ImageURLDownloadedDelegate?
+    var imageData   : [String : String] = [String : String]()
+    var longitude   : Double?
+    var latitude    : Double?
+    var delegate    : ImageURLDownloadedDelegate?
     
     var photoCoordinates : CLLocationCoordinate2D? {
         set (newCoordinates){
@@ -69,7 +69,7 @@ class FlickrAPI: NSObject {
     Additional information:
     - The parameter order is arbitrary.
     */
-    func searchImagesByLatLon(forCoordinates coor : CLLocationCoordinate2D, updateMeForEachURL delegate : ImageURLDownloadedDelegate?, completionHandler : (([String], NSError?) -> Void)?) {
+    func searchImagesByLatLon(forCoordinates coor : CLLocationCoordinate2D, updateMeForEachURL delegate : ImageURLDownloadedDelegate?, completionHandler : (([String : String], NSError?) -> Void)?) {
         print("searching photos for coordinates: \(coor)")
         self.photoCoordinates = coor
         self.delegate = delegate
@@ -90,7 +90,7 @@ class FlickrAPI: NSObject {
 
     /*This method starts downloading Flickr images basd on the parameter passed in. It handles various error scenarios
     and executes a completion handler after image urls have been downloaded and parsed.*/
-    private func downloadImageData(withParameter methodParameters: [String:AnyObject], withCompletionHandler handler : (([String], NSError?) -> Void)?) {
+    private func downloadImageData(withParameter methodParameters: [String:AnyObject], withCompletionHandler handler : (([String : String], NSError?) -> Void)?) {
         
         // create session and request
         let session = NSURLSession.sharedSession()
@@ -150,13 +150,14 @@ class FlickrAPI: NSObject {
                 return
             }
             if let photos = photosDictionary["photo"] as? [[String : AnyObject]] {
-                for url in photos {
+                for photo in photos {
 //                    print("key: \(url["url_m"])")
-                    let urlString = url["url_m"] as! String
-                    self.delegate?.newImageURLDownloaded(urlString)
-                    self.imageURLs.append(urlString)
+                    let urlString   = photo["url_m"] as! String
+                    let imageID     = photo["id"] as! String
+                    self.delegate?.newImageURLDownloaded(urlString, withPhotoID: imageID)
+                    self.imageData[imageID] = urlString
                 }
-                handler?(self.imageURLs, nil)
+                handler?(self.imageData, nil)
             }
         }
         
