@@ -11,6 +11,7 @@ import CoreData
 import UIKit
 protocol PhotoImageLoadedDelegate {
     func imageLoaded()
+    func imageRemoved()
 }
 
 class Photo : NSManagedObject {
@@ -31,7 +32,7 @@ class Photo : NSManagedObject {
         self.imageURL = imageURL
     }
     
-    var photoImage : UIImage? {
+    var image : UIImage? {
         get {
             return FlickrAPI.Caches.imageCache.imageWithIdentifier(imageID)
         }
@@ -39,15 +40,17 @@ class Photo : NSManagedObject {
         set {
             if newValue != nil {
                 FlickrAPI.Caches.imageCache.storeImage(newValue, withIdentifier: imageID!)
-                print("[Photo photoImage]: image loaded")
+                print("[Photo image]: image loaded")
                 delegate?.imageLoaded()
+            } else {
+                delegate?.imageRemoved()
             }
         }
     }
     
     func startLoadingPhotoURL() {
         print("[Photo startLoadingPhotoURL]: loading url: \(imageURL)")
-        if photoImage != nil {
+        if image != nil {
             print("[Photo]: image \(imageID) already available, skipping download")
             delegate?.imageLoaded()
             return
@@ -56,7 +59,7 @@ class Photo : NSManagedObject {
         if let downloadedData = potentiallyDownloadedData {
             dispatch_async(dispatch_get_main_queue()) {
                 let imageFromData = UIImage(data: downloadedData)
-                self.photoImage = imageFromData
+                self.image = imageFromData
             }
         }
     }

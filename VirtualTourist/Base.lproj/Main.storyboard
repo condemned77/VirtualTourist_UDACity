@@ -173,14 +173,14 @@
                                             <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wXz-7H-6uX" userLabel="ContentView">
-                                                    <rect key="frame" x="8" y="8" width="134" height="134"/>
+                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wXz-7H-6uX" userLabel="ContentView">
+                                                    <rect key="frame" x="8" y="8" width="184" height="184"/>
                                                     <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wVS-h2-ug8">
-                                                            <rect key="frame" x="0.0" y="0.0" width="134" height="134"/>
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="wVS-h2-ug8">
+                                                            <rect key="frame" x="0.0" y="0.0" width="184" height="184"/>
                                                         </imageView>
-                                                        <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="FNG-Ec-EgE">
-                                                            <rect key="frame" x="57" y="57" width="20" height="20"/>
+                                                        <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="FNG-Ec-EgE">
+                                                            <rect key="frame" x="74" y="73" width="37" height="37"/>
                                                         </activityIndicatorView>
                                                     </subviews>
                                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>

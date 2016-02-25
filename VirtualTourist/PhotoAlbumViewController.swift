@@ -121,7 +121,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     func loadNewImageCollection() {
         guard amountOfPhotos > 0 else {print("no photos available for refresh"); return}
         removeCurrentlyDisplayedImages()
-        loadNewImages()
+//        loadNewImages()
     }
     
     
@@ -186,8 +186,9 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         for (var idx = 0; idx < amountOfPhotos; ++idx) {
             let indexPath = NSIndexPath(forRow: idx, inSection: 0)
             let photo = (fetchedResultsController.objectAtIndexPath(indexPath) as! Photo)
-            photo.photoImage = nil
             oldImageURLs.append(photo.imageURL)
+            photo.image = nil
+            photo.imageURL = nil
         }
         collectionView.reloadData()
     }
@@ -285,21 +286,14 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     
     
     /*Convenience method for configuring a cell of the UICollectionView instance.
-    This method loads a placeholder image to the cell if no image has been loaded
-    to an associated Photo instance (a PhotoCell instance has a Photo instance 
-    associated as an instance variable). If a placeholder is displayed also an
-    activityIndicator is placed on top in order to signal that a image is currently loaded.
-    Loading such an image is also triggered in any case. This doesn't that an image is 
-    loaded form the internet, it may also be present in the local cache.*/
+    This method sets a photo instance to the cell, in order fro the cell to display
+    an image, if one is present in the photo instance. 
+    In case a user has touched a cell, the index path of such a cell is stored in
+    the selctedIndexes array. In such case, the alpha variable of a cell is changed,
+    in order to visually indicate that it has been marked by the user (for deletion).*/
     func configureCell(cell : PhotoCell, atIndexPath indexPath : NSIndexPath) {
         let photo = fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
-        if cell.image == nil {
-            cell.loadPlaceholderImage()
-        }
-        cell.activityIndicator?.startAnimating()
         cell.photo = photo
-        photo.startLoadingPhotoURL()
-
         if let _ = selectedIndexes.indexOf(indexPath) {
             cell.alpha = 0.05
         } else {
