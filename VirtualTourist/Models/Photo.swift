@@ -43,7 +43,7 @@ class Photo : NSManagedObject {
             if newValue != nil {
                 FlickrAPI.Caches.imageCache.storeImage(newValue, withIdentifier: imageID!)
                 print("[Photo image]: image loaded")
-                delegate?.imageLoaded(fromURL: nil)
+                delegate?.imageLoaded(fromURL: imageID)
             } else {
                 delegate?.imageRemoved()
             }

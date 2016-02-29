@@ -54,23 +54,7 @@ class PhotoCell : UICollectionViewCell, PhotoImageLoadedDelegate {
     The placeholder image is also somewhat translucent.*/
     func loadPlaceholderImage() {
         print("[PhotoCell loadPlaceholderImage]")
-
-        dispatch_async(dispatch_get_main_queue()) {
-            print("image before placeholder: \(self.imageView.image)")
-            self.imageView.contentMode = UIViewContentMode.ScaleAspectFit
-            self.imageView.image = self.placeholder
-            print("image after placeholder: \(self.imageView.image)")
-            self.addSubview(self.imageView)
-            self.bringSubviewToFront(self.imageView)
-            self.imageView.alpha = 0.3
-            self.imageView.addSubview(self.activityIndicator)
-            self.activityIndicator.startAnimating()
-            self.imageView.addSubview(self.activityIndicator)
-            if self.activityIndicator.hidden == true {
-                self.activityIndicator.hidden = false
-            }
-            self.activityIndicator.hidesWhenStopped = true
-        }
+        self.showImageOnCell(self.placeholder)
     }
     
     
@@ -78,13 +62,36 @@ class PhotoCell : UICollectionViewCell, PhotoImageLoadedDelegate {
     Also the activity indicator, is stopped and removed from the view.*/
     func showImageOfPhotoInstance() {
         print("[PhotoCell showImageOfPhotoInstance]")
-        imageView!.contentMode  = UIViewContentMode.ScaleAspectFit
-        imageView!.image        = photo!.image
-        print("image size: \(imageView.image?.size)")
-        bringSubviewToFront(imageView)
-        activityIndicator.stopAnimating()
-        activityIndicator.removeFromSuperview()
-        imageView.alpha         = 1.0
+        self.showImageOnCell(self.photo!.image)
+        print("image size: \(self.imageView.image?.size)")
+    }
+    
+    func showImageOnCell(var image : UIImage?) {
+        dispatch_async(dispatch_get_main_queue()) {
+            if image == nil {
+                image = self.placeholder
+            }
+            self.imageView!.contentMode  = UIViewContentMode.ScaleAspectFit
+            self.imageView!.image        = image
+            
+            if image == self.placeholder {
+                self.imageView.alpha = 0.3
+                self.imageView.addSubview(self.activityIndicator)
+                self.activityIndicator.startAnimating()
+                if self.activityIndicator.hidden == true {
+                    self.activityIndicator.hidden = false
+                }
+                self.activityIndicator.hidesWhenStopped = true
+
+            } else {
+                self.imageView.alpha         = 1.0
+                self.activityIndicator.stopAnimating()
+                self.activityIndicator.removeFromSuperview()
+            }
+           
+            self.addSubview(self.imageView)
+            self.bringSubviewToFront(self.imageView)
+        }
     }
     
     
