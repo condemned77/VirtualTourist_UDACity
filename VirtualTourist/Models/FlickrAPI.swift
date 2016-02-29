@@ -10,7 +10,8 @@ import Foundation
 import MapKit
 
 protocol ImageURLDownloadedDelegate {
-    func newImageURLDownloaded(urlString : String, withPhotoID: String);
+    func newImageURLDownloaded(urlString : String, withPhotoID: String)
+    func setPageAmountOfLastRequest(pages : Int, currentPage : Int)
 }
 
 class FlickrAPI: NSObject {
@@ -69,11 +70,13 @@ class FlickrAPI: NSObject {
     Additional information:
     - The parameter order is arbitrary.
     */
-    func searchImagesByLatLon(forCoordinates coor : CLLocationCoordinate2D, updateMeForEachURL delegate : ImageURLDownloadedDelegate?, completionHandler : (([String : String], NSError?) -> Void)?) {
+    func searchImagesByLatLon(forCoordinates coor : CLLocationCoordinate2D, updateMeForEachURL delegate : ImageURLDownloadedDelegate?, pageNumber: Int?, completionHandler : (([String : String], NSError?) -> Void)?) {
         print("searching photos for coordinates: \(coor)")
         self.photoCoordinates = coor
         self.delegate = delegate
-        let methodParameters = [
+        
+       
+        var methodParameters = [
             FlickrConstants.FlickrParameterKeys.Method: FlickrConstants.FlickrParameterValues.SearchMethod,
             FlickrConstants.FlickrParameterKeys.APIKey: FlickrConstants.FlickrParameterValues.APIKey,
             FlickrConstants.FlickrParameterKeys.BoundingBox: bboxString(),
@@ -81,8 +84,15 @@ class FlickrAPI: NSObject {
             FlickrConstants.FlickrParameterKeys.Extras: FlickrConstants.FlickrParameterValues.MediumURL,
             FlickrConstants.FlickrParameterKeys.Format: FlickrConstants.FlickrParameterValues.ResponseFormat,
             FlickrConstants.FlickrParameterKeys.NoJSONCallback: FlickrConstants.FlickrParameterValues.DisableJSONCallback,
-            FlickrConstants.FlickrParameterKeys.SearchAccuracy: FlickrConstants.FlickrParameterValues.accuracyValue
+            FlickrConstants.FlickrParameterKeys.SearchAccuracy: FlickrConstants.FlickrParameterValues.accuracyValue,
+            FlickrConstants.FlickrParameterKeys.PerPage : FlickrConstants.FlickrParameterValues.perPageVirtualTourist
         ]
+    
+        if let pageNum = pageNumber {
+            methodParameters[FlickrConstants.FlickrParameterKeys.Page] = String(pageNum)
+        }
+
+        
         dispatch_async(dispatch_get_main_queue()) {
             self.downloadImageData(withParameter: methodParameters, withCompletionHandler : completionHandler)
         }
@@ -149,6 +159,13 @@ class FlickrAPI: NSObject {
                 displayError("Cannot find key '\(FlickrConstants.FlickrResponseKeys.Pages)' in \(photosDictionary)")
                 return
             }
+            
+            if let amountOfPages : Int = (photosDictionary[FlickrConstants.FlickrResponseKeys.Pages] as! Int){
+                if let currentPageReturned : Int = (photosDictionary[FlickrConstants.FlickrResponseKeys.Page] as! Int) {
+                    self.delegate!.setPageAmountOfLastRequest(amountOfPages, currentPage: currentPageReturned)
+                }
+            }
+
             if let photos = photosDictionary["photo"] as? [[String : AnyObject]] {
                 for photo in photos {
 //                    print("key: \(url["url_m"])")
@@ -166,7 +183,7 @@ class FlickrAPI: NSObject {
     }
     
     
-    /*Convenience methdo for assembling a URL from passed in parameters.*/
+    /*Convenience method for assembling a URL from passed in parameters.*/
     private func flickrURLFromParameters(parameters: [String:AnyObject]) -> NSURL {
         
         let components = NSURLComponents()

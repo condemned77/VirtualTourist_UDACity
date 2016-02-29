@@ -30,7 +30,6 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     var pin : Pin!
     var mapViewRegion : MKCoordinateRegion?
     var sharedContext = CoreDataStackManager.sharedInstance().managedObjectContext
-    var oldImageURLs : [String] = [String]()
     
     
     lazy var fetchedResultsController : NSFetchedResultsController = {
@@ -54,6 +53,22 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         return sectionInfo.numberOfObjects
     }
     
+    
+//    override func viewDidLayoutSubviews() {
+//        super.viewDidLayoutSubviews()
+//        
+//        // Lay out the collection view so that cells take up 1/3 of the width,
+//        // with no space in between.
+//        let layout : UICollectionViewFlowLayout = UICollectionViewFlowLayout()
+//        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+//        layout.minimumLineSpacing = 0
+//        layout.minimumInteritemSpacing = 0
+//        
+//        let width = floor(self.collectionView.frame.size.width/3)
+//        layout.itemSize = CGSize(width: width, height: width)
+//        collectionView.collectionViewLayout = layout
+//    }
+
     
     /*When the view is loaded, the mapview instance of this viewController is centered 
     to the coordinates of the Pin instance associated.
@@ -120,8 +135,8 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     loads new ones.*/
     func loadNewImageCollection() {
         guard amountOfPhotos > 0 else {print("no photos available for refresh"); return}
-        removeCurrentlyDisplayedImages()
-//        loadNewImages()
+        loadNewImages()
+//        removeCurrentlyDisplayedImages()
     }
     
     
@@ -141,7 +156,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         for photo in photosToDelete {
             sharedContext.deleteObject(photo)
         }
-        
+        CoreDataStackManager.sharedInstance().saveContext()
         selectedIndexes = [NSIndexPath]()
         toggleBottomButtonTitle()
     }
@@ -167,7 +182,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
 //                    ++index
 //                }
 //            }
-            self.collectionView.reloadData()
+//            self.collectionView.reloadData()
 //        }
     }
     
@@ -175,22 +190,16 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     /*This method iterates over the currently available amount of Photo instances
     and sets their photoImage instance variable to nil in order to delete the
     associated image.
-    
-    Old image URLs are now stored in a instance variable called oldImageURLs.
-    An image URL qualifies to as 'old' if the image URL had been loaded and
-    is about to be replaced. The idea behind storing this old urls is  that
-    they could be used later on to be compared again new URLs in order to avoid
-    displaying images that have already been displayed beforehand.*/
+    */
     func removeCurrentlyDisplayedImages() {
         
         for (var idx = 0; idx < amountOfPhotos; ++idx) {
             let indexPath = NSIndexPath(forRow: idx, inSection: 0)
             let photo = (fetchedResultsController.objectAtIndexPath(indexPath) as! Photo)
-            oldImageURLs.append(photo.imageURL)
             photo.image = nil
             photo.imageURL = nil
         }
-        collectionView.reloadData()
+//        collectionView.reloadData()
     }
     
     
@@ -255,8 +264,8 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     delete it by pressing a button at the bottom of the view, which will be activated as soon
     as any cell is touched. This button will be activated by calling the method toggleBottomButtonTitle*/
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-        
         let cell = collectionView.cellForItemAtIndexPath(indexPath) as! PhotoCell
+        print("[PhotoAlbumVC didSelectItem]: imagesize: \(cell.imageView.image?.size), cell size: \(cell.frame.size) with url: \(cell.photo?.imageURL)")
         
         // Whenever a cell is tapped we will toggle its presence in the selectedIndexes array
         if let index = selectedIndexes.indexOf(indexPath) {
@@ -336,6 +345,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
                 self.collectionView.reloadItemsAtIndexPaths([indexPath])
             }
             
+            CoreDataStackManager.sharedInstance().saveContext()
             }, completion: nil)
     }
     

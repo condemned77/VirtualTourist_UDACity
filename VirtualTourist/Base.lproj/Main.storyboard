@@ -156,6 +156,9 @@
                                     </navigationItem>
                                 </items>
                             </navigationBar>
+                            <mapView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" mapType="standard" zoomEnabled="NO" scrollEnabled="NO" rotateEnabled="NO" pitchEnabled="NO" showsBuildings="NO" showsPointsOfInterest="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aQz-Js-k3x">
+                                <rect key="frame" x="0.0" y="44" width="600" height="120"/>
+                            </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Q50-5S-FBR">
                                 <rect key="frame" x="0.0" y="164" width="600" height="392"/>
                                 <color key="backgroundColor" red="0.0" green="0.66090106959999995" blue="0.99482482670000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -173,34 +176,22 @@
                                             <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wXz-7H-6uX" userLabel="ContentView">
+                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="wVS-h2-ug8" userLabel="flickrImage">
                                                     <rect key="frame" x="8" y="8" width="184" height="184"/>
-                                                    <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="wVS-h2-ug8">
-                                                            <rect key="frame" x="0.0" y="0.0" width="184" height="184"/>
-                                                        </imageView>
-                                                        <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="FNG-Ec-EgE">
-                                                            <rect key="frame" x="74" y="73" width="37" height="37"/>
-                                                        </activityIndicatorView>
-                                                    </subviews>
-                                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                    <constraints>
-                                                        <constraint firstItem="wVS-h2-ug8" firstAttribute="leading" secondItem="wXz-7H-6uX" secondAttribute="leading" id="C9B-WS-O9N"/>
-                                                        <constraint firstItem="wVS-h2-ug8" firstAttribute="top" secondItem="wXz-7H-6uX" secondAttribute="top" id="Pcy-ww-gB8"/>
-                                                        <constraint firstItem="FNG-Ec-EgE" firstAttribute="centerY" secondItem="wVS-h2-ug8" secondAttribute="centerY" id="SH8-R4-kLe"/>
-                                                        <constraint firstAttribute="bottom" secondItem="wVS-h2-ug8" secondAttribute="bottom" id="akQ-yU-pOf"/>
-                                                        <constraint firstAttribute="trailing" secondItem="wVS-h2-ug8" secondAttribute="trailing" id="ndR-6P-57Z"/>
-                                                        <constraint firstItem="FNG-Ec-EgE" firstAttribute="centerX" secondItem="wVS-h2-ug8" secondAttribute="centerX" id="wx6-Hu-10u"/>
-                                                    </constraints>
-                                                </view>
+                                                </imageView>
+                                                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="FNG-Ec-EgE">
+                                                    <rect key="frame" x="81" y="82" width="37" height="37"/>
+                                                </activityIndicatorView>
                                             </subviews>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         </view>
                                         <constraints>
-                                            <constraint firstItem="wXz-7H-6uX" firstAttribute="leading" secondItem="Ngh-tH-wrk" secondAttribute="leadingMargin" id="0SL-gN-WG0"/>
-                                            <constraint firstAttribute="trailingMargin" secondItem="wXz-7H-6uX" secondAttribute="trailing" id="IY3-kb-myA"/>
-                                            <constraint firstAttribute="bottomMargin" secondItem="wXz-7H-6uX" secondAttribute="bottom" id="XWB-Fe-sgk"/>
-                                            <constraint firstItem="wXz-7H-6uX" firstAttribute="top" secondItem="Ngh-tH-wrk" secondAttribute="topMargin" id="ah1-PV-ZdW"/>
+                                            <constraint firstAttribute="bottomMargin" secondItem="wVS-h2-ug8" secondAttribute="bottom" id="2t0-ar-I80"/>
+                                            <constraint firstAttribute="leadingMargin" secondItem="wVS-h2-ug8" secondAttribute="leading" id="3gB-lm-n6R"/>
+                                            <constraint firstItem="FNG-Ec-EgE" firstAttribute="centerY" secondItem="wVS-h2-ug8" secondAttribute="centerY" id="I69-a6-Slb"/>
+                                            <constraint firstAttribute="topMargin" secondItem="wVS-h2-ug8" secondAttribute="top" id="NMR-hq-mHv"/>
+                                            <constraint firstAttribute="trailingMargin" secondItem="wVS-h2-ug8" secondAttribute="trailing" id="P9r-QN-iIl"/>
+                                            <constraint firstItem="FNG-Ec-EgE" firstAttribute="centerX" secondItem="wVS-h2-ug8" secondAttribute="centerX" id="gOk-5z-8Ux"/>
                                         </constraints>
                                         <size key="customSize" width="200" height="200"/>
                                         <connections>
@@ -214,9 +205,6 @@
                                     <outlet property="delegate" destination="jvk-W8-iGa" id="2YU-MP-IAA"/>
                                 </connections>
                             </collectionView>
-                            <mapView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" mapType="standard" zoomEnabled="NO" scrollEnabled="NO" rotateEnabled="NO" pitchEnabled="NO" showsBuildings="NO" showsPointsOfInterest="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aQz-Js-k3x">
-                                <rect key="frame" x="0.0" y="44" width="600" height="120"/>
-                            </mapView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>

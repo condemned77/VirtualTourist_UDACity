@@ -162,6 +162,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         return pinView
     }
     
+    
     /*Callback method of the MKMapViewDelegate protocol, is called if a new pin has been
     added to the map. If the pin drop should be animated, an animation is executed on the
     view of the Pin (type: MKAnnotationView). This animation looks as if the pin is falling
@@ -225,7 +226,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
 //       toggleEditButtonText()
     }
     
-    /*Toggling the button text currently lead to an issue where the moveing mapview
+    /*Toggling the button text currently leads to an issue where the moveing mapview
     is moving to the bottom of the screen and relocating itself in its original position,
     instead of moving towards the bottom.*/
     func toggleEditButtonText() {

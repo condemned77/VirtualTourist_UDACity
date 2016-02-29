@@ -10,13 +10,13 @@ import Foundation
 import CoreData
 import UIKit
 protocol PhotoImageLoadedDelegate {
-    func imageLoaded()
+    func imageLoaded(fromURL url : String?)
     func imageRemoved()
 }
 
 class Photo : NSManagedObject {
-    @NSManaged var imageURL : String!
-    @NSManaged var imageID  : String!
+    @NSManaged var imageURL : String?
+    @NSManaged var imageID  : String?
     @NSManaged var pin      : Pin?
     
     var delegate            : PhotoImageLoadedDelegate?
@@ -25,12 +25,14 @@ class Photo : NSManagedObject {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
     
+    
     init(withPin pin : Pin, imageURL : String, andContext context : NSManagedObjectContext) {
         let entity = NSEntityDescription.entityForName("Photo", inManagedObjectContext: context)!
         super.init(entity: entity, insertIntoManagedObjectContext: context)
         self.pin = pin
         self.imageURL = imageURL
     }
+    
     
     var image : UIImage? {
         get {
@@ -41,21 +43,28 @@ class Photo : NSManagedObject {
             if newValue != nil {
                 FlickrAPI.Caches.imageCache.storeImage(newValue, withIdentifier: imageID!)
                 print("[Photo image]: image loaded")
-                delegate?.imageLoaded()
+                delegate?.imageLoaded(fromURL: nil)
             } else {
                 delegate?.imageRemoved()
             }
         }
     }
     
+    /*Called before the photo instance is removed from CoreData. This method
+    makes sure that the references images are also deleted from the documents directory.*/
+    override func prepareForDeletion() {
+        FlickrAPI.Caches.imageCache.storeImage(nil, withIdentifier: imageID!)
+    }
+    
+    
     func startLoadingPhotoURL() {
-        print("[Photo startLoadingPhotoURL]: loading url: \(imageURL)")
+        print("[Photo startLoadingPhotoURL]: \(self) loading url: \(imageURL)")
         if image != nil {
             print("[Photo]: image \(imageID) already available, skipping download")
-            delegate?.imageLoaded()
+            delegate?.imageLoaded(fromURL: imageURL)
             return
         }
-        let potentiallyDownloadedData : NSData? = NSData(contentsOfURL: NSURL(string: imageURL)!)
+        let potentiallyDownloadedData : NSData? = NSData(contentsOfURL: NSURL(string: imageURL!)!)
         if let downloadedData = potentiallyDownloadedData {
             dispatch_async(dispatch_get_main_queue()) {
                 let imageFromData = UIImage(data: downloadedData)

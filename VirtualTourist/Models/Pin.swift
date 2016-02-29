@@ -20,9 +20,11 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
     @NSManaged var photos           : NSMutableOrderedSet
     @NSManaged var longitude        : Double
     @NSManaged var latitude         : Double
-    
+    var oldImageURLs : [String] = [String]()
     var delegate : NewPhotoInstancesAvailableDelegate?
     var currentlyFetchingPhotoURLs = false
+    var amountOfImagePages : Int?
+    var currentImagePageNumber : Int?
     
     let flickrAPI = FlickrAPI.sharedInstance()
     var coordinates : CLLocationCoordinate2D  {
@@ -55,7 +57,16 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
     func fetchNewPhotoURLs() -> Bool{
         guard currentlyFetchingPhotoURLs == false else {print("already fetching photo urls."); return false}
         currentlyFetchingPhotoURLs = true
-        flickrAPI.searchImagesByLatLon(forCoordinates: coordinates, updateMeForEachURL: self) {
+        
+        storeAndRemoveOldURLs()
+        var pageNum : Int?
+        if let potentialPageNum : Int = self.currentImagePageNumber {
+            pageNum = potentialPageNum + 1
+            if pageNum > amountOfImagePages {
+                self.currentImagePageNumber = 1
+            }
+        }
+        flickrAPI.searchImagesByLatLon(forCoordinates: coordinates, updateMeForEachURL: self, pageNumber: pageNum) {
             urls, error in
             guard error == nil else {print("error while downloading image urls from flickr: \(error)"); self.currentlyFetchingPhotoURLs = false; return}
             self.currentlyFetchingPhotoURLs = false
@@ -63,16 +74,60 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
         return true
     }
     
-    /*  Creates new image if necessary, else don't care for instantiation
-        and just wait for the rest of urls to be downloaded and update images
-        later. 
-    */
+
+    /*Cache all urls of the current photo instances in order to have a refrence,
+    when new URLs are available, because duplicate URLs should be avoided.*/
+    func storeAndRemoveOldURLs() {
+        if self.oldImageURLs.count > 0 {self.oldImageURLs.removeAll()}
+        for photo in self.photos {
+            let castedPhoto = photo as! Photo
+            if castedPhoto.imageURL == nil {
+                continue
+            }
+            self.oldImageURLs.append(castedPhoto.imageURL!)
+            castedPhoto.imageURL = nil
+            castedPhoto.imageID = nil
+            castedPhoto.image = nil
+        }
+    }
+    
+    
+    /*  Creates new image if necessary, else assign new downloaded imageURL and
+    imageID to an existing Photo instance and start downloading the new image.*/
     func newImageURLDownloaded(urlString : String, withPhotoID: String) {
         sharedContext.performBlockAndWait() {
+            print("[Pin newImageURLDownloaded: \(urlString) withPhotoID: \(withPhotoID)]")
+
             if self.photos.count < Constants.maxAmountOfPhotos {
                 self.createNewPhoto(withUrl: urlString, andPhotoID: withPhotoID)
+            } else {
+                print("Handling url: \(urlString)")
+                for photo in self.photos {
+                    let castedPhoto = photo as! Photo
+                    if castedPhoto.imageURL == nil {
+                        castedPhoto.imageURL = urlString
+                        castedPhoto.imageID = withPhotoID
+                        castedPhoto.startLoadingPhotoURL()
+                        break
+                    }
+                }
             }
+            CoreDataStackManager.sharedInstance().saveContext()
         }
+    }
+    
+    
+    /*Callback for setting the amount of pages available for a flickr API request.
+    This argument is also returned by the flickr API when requesting new images.*/
+    func setPageAmountOfLastRequest(pages : Int, currentPage : Int) {
+//        if let amountOfPages = Int(pages) {
+            print("Amount of pages for last HTTP request to FlickrAPI: \(pages)")
+            self.amountOfImagePages = pages
+//        }
+        
+//        if let currentPageReturned = Int(currentPage) {
+            self.currentImagePageNumber = currentPage
+//        }
     }
     
     
