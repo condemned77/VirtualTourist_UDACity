@@ -11,7 +11,7 @@ import MapKit
 import CoreData
 
 protocol NewPhotoInstancesAvailableDelegate {
-    func newPhotoInstancesAvailable();
+    func newPhotoInstanceAvailable(photoInstance : Photo);
 }
 
 class Pin : NSManagedObject, ImageURLDownloadedDelegate{
@@ -20,11 +20,12 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
     @NSManaged var photos           : NSMutableOrderedSet
     @NSManaged var longitude        : Double
     @NSManaged var latitude         : Double
+    @NSManaged var amountOfPages    : Int
+    @NSManaged var currentPage      : Int
+    
     var oldImageURLs : [String] = [String]()
     var delegate : NewPhotoInstancesAvailableDelegate?
     var currentlyFetchingPhotoURLs = false
-    var amountOfImagePages : Int?
-    var currentImagePageNumber : Int?
     
     let flickrAPI = FlickrAPI.sharedInstance()
     var coordinates : CLLocationCoordinate2D  {
@@ -47,7 +48,9 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
     init(withCoordiantes coordinates : CLLocationCoordinate2D, andContext context: NSManagedObjectContext) {
         let entity = NSEntityDescription.entityForName("Pin", inManagedObjectContext: context)
         super.init(entity: entity!, insertIntoManagedObjectContext: context)
-        self.coordinates = coordinates
+        self.coordinates    = coordinates
+        self.currentPage    = 0
+        self.amountOfPages  = 0
         self.fetchNewPhotoURLs()
     }
     
@@ -60,10 +63,10 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
         
         storeAndRemoveOldURLs()
         var pageNum : Int?
-        if let potentialPageNum : Int = self.currentImagePageNumber {
-            pageNum = potentialPageNum + 1
-            if pageNum > amountOfImagePages {
-                self.currentImagePageNumber = 1
+        if self.currentPage != 0 {
+            pageNum = self.currentPage + 1
+            if pageNum > self.amountOfPages {
+                self.currentPage = 1
             }
         }
         flickrAPI.searchImagesByLatLon(forCoordinates: coordinates, updateMeForEachURL: self, pageNumber: pageNum) {
@@ -85,9 +88,9 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
                 continue
             }
             self.oldImageURLs.append(castedPhoto.imageURL!)
-            castedPhoto.imageURL = nil
-            castedPhoto.imageID = nil
-            castedPhoto.image = nil
+            castedPhoto.imageURL    = nil
+            castedPhoto.imageID     = nil
+            castedPhoto.image       = nil
         }
     }
     
@@ -105,8 +108,8 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
                 for photo in self.photos {
                     let castedPhoto = photo as! Photo
                     if castedPhoto.imageURL == nil {
-                        castedPhoto.imageURL = urlString
-                        castedPhoto.imageID = withPhotoID
+                        castedPhoto.imageURL    = urlString
+                        castedPhoto.imageID     = withPhotoID
                         castedPhoto.startLoadingPhotoURL()
                         break
                     }
@@ -120,14 +123,18 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
     /*Callback for setting the amount of pages available for a flickr API request.
     This argument is also returned by the flickr API when requesting new images.*/
     func setPageAmountOfLastRequest(pages : Int, currentPage : Int) {
+        print("[Pin setPageAmountOfLastRequest]: pages: \(pages) current page: \(currentPage). IsMainThread: \(NSThread.isMainThread())")
 //        if let amountOfPages = Int(pages) {
+        dispatch_async(dispatch_get_main_queue()) {
             print("Amount of pages for last HTTP request to FlickrAPI: \(pages)")
-            self.amountOfImagePages = pages
+            self.amountOfPages = pages
 //        }
         
 //        if let currentPageReturned = Int(currentPage) {
-            self.currentImagePageNumber = currentPage
+            self.currentPage = currentPage
 //        }
+            CoreDataStackManager.sharedInstance().saveContext()
+        }
     }
     
     
@@ -154,7 +161,7 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
             photo.imageID = photoID
             photo.startLoadingPhotoURL()
             self.photos.addObject(photo)
-            self.delegate?.newPhotoInstancesAvailable()
+            self.delegate?.newPhotoInstanceAvailable(photo)
             CoreDataStackManager.sharedInstance().saveContext()
         })
     }
@@ -163,6 +170,7 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
     /*This method allows for exchanging imageURLs that are currently associented with Photo instances, by passing in
     an array of new imageURLs as type string.*/
     func updateImageURLs(urls : [String]) {
+        print("[Pin updateImageURLs]: IsMainThread: \(NSThread.isMainThread())")
         for (index, url) in urls.enumerate() {
             guard index < Constants.maxAmountOfPhotos else {print("[Pin addImageURLs] Amount of displayed photos is limited to \(Constants.maxAmountOfPhotos)"); return}
             (self.photos.objectAtIndex(index) as! Photo).imageURL = url

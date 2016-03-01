@@ -10,7 +10,7 @@ import Foundation
 import MapKit
 import CoreData
 
-class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, NSFetchedResultsControllerDelegate {
+class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, NSFetchedResultsControllerDelegate, NewPhotoInstancesAvailableDelegate {
 
     @IBOutlet weak var noPhotosLabel    : UILabel?
     @IBOutlet weak var mapView          : MKMapView!
@@ -25,6 +25,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     var insertedIndexPaths  : [NSIndexPath]!
     var deletedIndexPaths   : [NSIndexPath]!
     var updatedIndexPaths   : [NSIndexPath]!
+    var movedIndexPaths     : [NSIndexPath : NSIndexPath]!
     
 
     var pin : Pin!
@@ -47,10 +48,12 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     currently considered Pin instance.*/
     var amountOfPhotos : Int {
         var sectionInfo : NSFetchedResultsSectionInfo!
+        var amountOfPhotosInContext : Int = 0
         sharedContext.performBlockAndWait {
             sectionInfo = self.fetchedResultsController.sections![0]
+            amountOfPhotosInContext = sectionInfo.numberOfObjects
         }
-        return sectionInfo.numberOfObjects
+        return amountOfPhotosInContext
     }
     
     
@@ -89,9 +92,17 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
             if amountOfPhotos == 0 {
                 toggleNoPhotosLabel()
                 pin.fetchNewPhotoURLs()
-            } else {
-                collectionView.reloadData()
+            } else { //cover the case that photo cells are empty/show placeholder and images aren't being downlaoded
+                dispatch_async(dispatch_get_main_queue()){
+                    for photo in self.pin!.photos {
+                        let castedPhoto = photo as! Photo
+                        if castedPhoto.image == nil && castedPhoto.imageURL != nil{
+                            castedPhoto.startLoadingPhotoURL()
+                        }
+                    }
+                }
             }
+            
         } catch let error {
             print("error: \(error)")
         }
@@ -166,27 +177,11 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     
     /*This method asks the Flickr API to search and download new image URLs based on the coordinates of the
     Pin assigned to this viewController instance. After the download was successful, the new image urls
-    are assigned to the Photoinstances on the Pin, followed by a reload of the collection view content.*/
+    are assigned to the Photo instances on the Pin. In turn, the photo instances communicate with their
+    delegates, i.e. the PhotoCell instances when an image is ready for display.*/
     func loadNewImages() {
         print("[PhotoAlbumViewController loadNewImages] IsMainThread: \(NSThread.isMainThread())")
         pin.fetchNewPhotoURLs()
-//        FlickrAPI.sharedInstance().searchImagesByLatLon(forCoordinates: pin.coordinates, updateMeForEachURL: nil) {
-//            urls, error in
-//            
-//            let newURLs : [String : String] = self.findNewImageURLs(fromURLDict: urls)
-//            var index = 0
-//            for (imageID, imageURL) in newURLs {
-//                dispatch_async(dispatch_get_main_queue()) {
-//                    let indexPath = NSIndexPath(forRow: index, inSection: 0)
-//                    let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
-//                    photo.imageURL = imageURL
-//                    photo.imageID = imageID
-//                    photo.startLoadingPhotoURL()
-//                    ++index
-//                }
-//            }
-//            self.collectionView.reloadData()
-//        }
     }
     
     
@@ -198,7 +193,9 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         for (var idx = 0; idx < amountOfPhotos; ++idx) {
             let indexPath = NSIndexPath(forRow: idx, inSection: 0)
             let photo = (fetchedResultsController.objectAtIndexPath(indexPath) as! Photo)
-            FlickrAPI.Caches.imageCache.storeImage(nil, withIdentifier: photo.imageID!)
+            if photo.imageID != nil {
+                FlickrAPI.Caches.imageCache.storeImage(nil, withIdentifier: photo.imageID!)
+            }
         }
     }
     
@@ -245,7 +242,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     internal func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("[PhotoAlbumViewController collectionView numbersOfItemsInSection] IsMainThread: \(NSThread.isMainThread())")
         if amountOfPhotos > 0 {toggleNoPhotosLabel()}
-        return amountOfPhotos
+        return Constants.maxAmountOfPhotos
     }
     
     
@@ -254,7 +251,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         print("[collectionView cellForItemAtIndexPath] IsMainThread: \(NSThread.isMainThread())")
         let cell : PhotoCell = collectionView.dequeueReusableCellWithReuseIdentifier("PhotoCell", forIndexPath: indexPath) as! PhotoCell
         configureCell(cell, atIndexPath: indexPath)
-    
+        cell.backgroundColor = UIColor.redColor()
         return cell
     }
     
@@ -302,12 +299,21 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     in order to visually indicate that it has been marked by the user (for deletion).*/
     func configureCell(cell : PhotoCell, atIndexPath indexPath : NSIndexPath) {
         print("[PhotoAlbumViewController configureCell] IsMainThread: \(NSThread.isMainThread())")
-        let photo = fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
-        cell.photo = photo
-        if let _ = selectedIndexes.indexOf(indexPath) {
-            cell.alpha = 0.05
-        } else {
-            cell.alpha = 1.0
+        print("amount of photos: \(amountOfPhotos), requested row: \(indexPath.row)")
+        if amountOfPhotos == 0 {
+            print("No photo instances available yet.");
+            self.toggleNoPhotosLabel();
+            return
+        } else if indexPath.row <= amountOfPhotos {
+            if cell.photo == nil {
+                let photo = fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
+                cell.photo = photo
+            }
+            if let _ = selectedIndexes.indexOf(indexPath) {
+                cell.alpha = 0.30
+            } else {
+                cell.alpha = 1.0
+            }
         }
     }
 
@@ -317,6 +323,22 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     internal func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
         return 1
     }
+    
+    
+    
+    func newPhotoInstanceAvailable(photoInstance : Photo) {
+        print("[PhotoAlbumViewController newPhotoInstanceAvailable]: IsMainThread: \(NSThread.isMainThread())")
+        for photoCell in collectionView.visibleCells() {
+            let castedCell = photoCell as! PhotoCell
+            if castedCell.photo == nil {
+                castedCell.photo = photoInstance
+                let indexPath = collectionView.indexPathForCell(castedCell)
+                configureCell(castedCell, atIndexPath: indexPath!)
+            }
+        }
+    }
+    
+    
 
     //MARK: NSFetchedResultsControllerDelegate method implementation
     //Callback method of NSFetchedResultsControllerDelegate
@@ -325,12 +347,13 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         insertedIndexPaths  = [NSIndexPath]()
         deletedIndexPaths   = [NSIndexPath]()
         updatedIndexPaths   = [NSIndexPath]()
+        movedIndexPaths     = [NSIndexPath : NSIndexPath]()
     }
     
     
     //Callback method of NSFetchedResultsControllerDelegate
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
-        print("in controllerDidChangeContent. changes.count: \(insertedIndexPaths.count + deletedIndexPaths.count). IsMainThread: \(NSThread.isMainThread())")
+        print("[PhotoAlbumViewController controllerDidChangeContent] changes.count: \(insertedIndexPaths.count + deletedIndexPaths.count). IsMainThread: \(NSThread.isMainThread())")
         
         collectionView.performBatchUpdates({() -> Void in
             print("[PhotoAlbumViewController controllerDidChangeContent] IsMainThread: \(NSThread.isMainThread())")
@@ -344,6 +367,15 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
             
             for indexPath in self.updatedIndexPaths {
                 self.collectionView.reloadItemsAtIndexPaths([indexPath])
+            }
+
+            //don't give a fuck about moving?!
+            for (oldIndexPath, newIndexPath) in self.movedIndexPaths {
+                let photo2BeMoved = controller.objectAtIndexPath(oldIndexPath) as! Photo
+                let photoCell2BeUpdated : PhotoCell? = self.collectionView.cellForItemAtIndexPath(newIndexPath) as? PhotoCell
+                if photoCell2BeUpdated != nil {
+                    photoCell2BeUpdated!.photo = photo2BeMoved
+                }
             }
             
             CoreDataStackManager.sharedInstance().saveContext()
@@ -360,7 +392,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
             break
         case .Delete:
             self.collectionView.deleteSections(NSIndexSet(index: sectionIndex))
-            
+            break
         default:
             return
         }
@@ -369,24 +401,23 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     
     //Callback method of NSFetchedResultsControllerDelegate
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
-        print("didChangeObject: \(anObject) atIndexPath: \(indexPath) forChangeType: \(type) newIndexPath: \(newIndexPath). IsMainThread: \(NSThread.isMainThread())")
+        print("didChangeObject: \(anObject) atIndexPath: \(indexPath) forChangeType: \(type.rawValue) newIndexPath: \(newIndexPath). IsMainThread: \(NSThread.isMainThread())")
         
         switch type {
         case .Insert:
-            print("Insert an item")
+            print("Insert(\(type.rawValue)) an item")
             insertedIndexPaths.append(newIndexPath!)
             break
         case .Delete:
-            print("Delete an item")
+            print("Delete(\(type.rawValue)) an item")
             deletedIndexPaths.append(indexPath!)
             break
         case .Move:
-            print("Move an item.")
-            insertedIndexPaths.append(newIndexPath!)
-            deletedIndexPaths.append(indexPath!)
+            print("Move(\(type.rawValue)) an item. From index path: \(indexPath) to newIndexPath: \(newIndexPath)")
+            movedIndexPaths[indexPath!] = newIndexPath!
             break
         case .Update:
-            print("Update an item.")
+            print("Update(\(type.rawValue)) an item.")
             updatedIndexPaths.append(indexPath!)
             break
         }

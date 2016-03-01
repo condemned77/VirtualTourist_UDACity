@@ -135,6 +135,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
                 print("Pin has \(pin!.photos.count) photos.")
                 
                 photoAlbumVC.pin = pin!
+                pin!.delegate = photoAlbumVC
                 photoAlbumVC.mapViewRegion = mapView.region
                 self.presentViewController(photoAlbumVC, animated: true, completion: nil)
                 
