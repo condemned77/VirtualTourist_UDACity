@@ -134,9 +134,9 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     /*Calling this method method removes all currently displayed images and 
     loads new ones.*/
     func loadNewImageCollection() {
-        guard amountOfPhotos > 0 else {print("no photos available for refresh"); return}
+//        guard amountOfPhotos > 0 else {print("no photos available for refresh"); return}
+        removeCurrentlyDisplayedImages()
         loadNewImages()
-//        removeCurrentlyDisplayedImages()
     }
     
     
@@ -192,14 +192,11 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     associated image.
     */
     func removeCurrentlyDisplayedImages() {
-        
         for (var idx = 0; idx < amountOfPhotos; ++idx) {
             let indexPath = NSIndexPath(forRow: idx, inSection: 0)
             let photo = (fetchedResultsController.objectAtIndexPath(indexPath) as! Photo)
-            photo.image = nil
-            photo.imageURL = nil
+            FlickrAPI.Caches.imageCache.storeImage(nil, withIdentifier: photo.imageID!)
         }
-//        collectionView.reloadData()
     }
     
     

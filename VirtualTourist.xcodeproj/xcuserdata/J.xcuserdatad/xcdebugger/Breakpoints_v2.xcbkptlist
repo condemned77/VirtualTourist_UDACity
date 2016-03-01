@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "VirtualTourist/PhotoAlbumViewController.swift"
-            timestampString = "478355621.60817"
+            timestampString = "478514735.016787"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "303"
-            endingLineNumber = "303"
+            startingLineNumber = "301"
+            endingLineNumber = "301"
             landmarkName = "configureCell(_:atIndexPath:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -32,6 +32,22 @@
             startingLineNumber = "55"
             endingLineNumber = "55"
             landmarkName = "prepareForDeletion()"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "VirtualTourist/PhotoAlbumViewController.swift"
+            timestampString = "478515077.475465"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "125"
+            endingLineNumber = "125"
+            landmarkName = "bottomButtonPressed(_:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
