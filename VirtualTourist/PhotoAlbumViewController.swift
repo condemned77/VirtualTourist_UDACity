@@ -123,6 +123,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     the selected image(s) should be deleted from the current view.
     */
     @IBAction func bottomButtonPressed(sender: UIBarButtonItem) {
+        print("[PhotoAlbumViewController bottomButtonPressed] IsMainThread: \(NSThread.isMainThread())")
         if selectedIndexes.isEmpty {
             loadNewImageCollection()
         } else {
@@ -134,6 +135,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     /*Calling this method method removes all currently displayed images and 
     loads new ones.*/
     func loadNewImageCollection() {
+        print("[PhotoAlbumViewController loadImageCollection] IsMainThread: \(NSThread.isMainThread())")
 //        guard amountOfPhotos > 0 else {print("no photos available for refresh"); return}
         removeCurrentlyDisplayedImages()
         loadNewImages()
@@ -146,7 +148,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     delete from the shared context.
     */
     func deleteSelectedImages() {
-
+        print("[PhotoAlbumViewController deleteSelectedImages] IsMainThread: \(NSThread.isMainThread())")
         var photosToDelete = [Photo]()
         
         for indexPath in selectedIndexes {
@@ -166,6 +168,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     Pin assigned to this viewController instance. After the download was successful, the new image urls
     are assigned to the Photoinstances on the Pin, followed by a reload of the collection view content.*/
     func loadNewImages() {
+        print("[PhotoAlbumViewController loadNewImages] IsMainThread: \(NSThread.isMainThread())")
         pin.fetchNewPhotoURLs()
 //        FlickrAPI.sharedInstance().searchImagesByLatLon(forCoordinates: pin.coordinates, updateMeForEachURL: nil) {
 //            urls, error in
@@ -240,7 +243,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     
     /*Callback method that return the amount of photos currently associates to this viewController.*/
     internal func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        print("[PhotoAlbumViewController collectionView numbersOfItemsInSection]")
+        print("[PhotoAlbumViewController collectionView numbersOfItemsInSection] IsMainThread: \(NSThread.isMainThread())")
         if amountOfPhotos > 0 {toggleNoPhotosLabel()}
         return amountOfPhotos
     }
@@ -248,7 +251,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     
     // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
     internal func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        print("collectionView cellForItemAtIndexPath")
+        print("[collectionView cellForItemAtIndexPath] IsMainThread: \(NSThread.isMainThread())")
         let cell : PhotoCell = collectionView.dequeueReusableCellWithReuseIdentifier("PhotoCell", forIndexPath: indexPath) as! PhotoCell
         configureCell(cell, atIndexPath: indexPath)
     
@@ -262,7 +265,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     as any cell is touched. This button will be activated by calling the method toggleBottomButtonTitle*/
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         let cell = collectionView.cellForItemAtIndexPath(indexPath) as! PhotoCell
-        print("[PhotoAlbumVC didSelectItem]: imagesize: \(cell.imageView.image?.size), cell size: \(cell.frame.size) with url: \(cell.photo?.imageURL)")
+        print("[PhotoAlbumVC didSelectItem]: imagesize: \(cell.imageView.image?.size), cell size: \(cell.frame.size) with url: \(cell.photo?.imageURL) IsMainThread: \(NSThread.isMainThread())")
         
         // Whenever a cell is tapped we will toggle its presence in the selectedIndexes array
         if let index = selectedIndexes.indexOf(indexPath) {
@@ -298,6 +301,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     the selctedIndexes array. In such case, the alpha variable of a cell is changed,
     in order to visually indicate that it has been marked by the user (for deletion).*/
     func configureCell(cell : PhotoCell, atIndexPath indexPath : NSIndexPath) {
+        print("[PhotoAlbumViewController configureCell] IsMainThread: \(NSThread.isMainThread())")
         let photo = fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
         cell.photo = photo
         if let _ = selectedIndexes.indexOf(indexPath) {
@@ -314,7 +318,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         return 1
     }
 
-    
+    //MARK: NSFetchedResultsControllerDelegate method implementation
     //Callback method of NSFetchedResultsControllerDelegate
     func controllerWillChangeContent(controller: NSFetchedResultsController) {
         print("[PhotoAlbumViewController controllerWillChangeContent]")
@@ -326,10 +330,10 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     
     //Callback method of NSFetchedResultsControllerDelegate
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
-        print("in controllerDidChangeContent. changes.count: \(insertedIndexPaths.count + deletedIndexPaths.count)")
+        print("in controllerDidChangeContent. changes.count: \(insertedIndexPaths.count + deletedIndexPaths.count). IsMainThread: \(NSThread.isMainThread())")
         
         collectionView.performBatchUpdates({() -> Void in
-            
+            print("[PhotoAlbumViewController controllerDidChangeContent] IsMainThread: \(NSThread.isMainThread())")
             for indexPath in self.insertedIndexPaths {
                 self.collectionView.insertItemsAtIndexPaths([indexPath])
             }
@@ -349,7 +353,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     
     //Callback method of NSFetchedResultsControllerDelegate
     func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType) {
-        
+        print("[PhotoAlbumViewController didChangeSection] IsMainThread: \(NSThread.isMainThread())")
         switch type {
         case .Insert:
             self.collectionView.insertSections(NSIndexSet(index: sectionIndex))
@@ -365,7 +369,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     
     //Callback method of NSFetchedResultsControllerDelegate
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
-        print("didChangeObject: \(anObject) atIndexPath: \(indexPath) forChangeType: \(type) newIndexPath: \(newIndexPath)")
+        print("didChangeObject: \(anObject) atIndexPath: \(indexPath) forChangeType: \(type) newIndexPath: \(newIndexPath). IsMainThread: \(NSThread.isMainThread())")
         
         switch type {
         case .Insert:
