@@ -381,7 +381,9 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
             deletedIndexPaths.append(indexPath!)
             break
         case .Move:
-            print("Move an item. Shouldn't happen.")
+            print("Move an item.")
+            insertedIndexPaths.append(newIndexPath!)
+            deletedIndexPaths.append(indexPath!)
             break
         case .Update:
             print("Update an item.")
