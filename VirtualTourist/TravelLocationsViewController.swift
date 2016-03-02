@@ -131,11 +131,11 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         if let viewAnnotation = view.annotation {
             if viewAnnotation.isKindOfClass(MKPointAnnotation) {
                 let pointAnnotation = view.annotation! as! MKPointAnnotation
-                let pin = self.pins[pointAnnotation]
-                print("Pin has \(pin!.photos.count) photos.")
+                let pin : Pin = self.pins[pointAnnotation]!
+                print("Pin has \(pin.photos.count) photos.")
                 
-                photoAlbumVC.pin = pin!
-                pin!.delegate = photoAlbumVC
+                photoAlbumVC.pin = pin
+                pin.delegate = photoAlbumVC
                 photoAlbumVC.mapViewRegion = mapView.region
                 self.presentViewController(photoAlbumVC, animated: true, completion: nil)
                 

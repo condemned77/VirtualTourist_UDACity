@@ -17,7 +17,7 @@ protocol PhotoImageLoadedDelegate {
 class Photo : NSManagedObject {
     @NSManaged var imageURL : String?
     @NSManaged var imageID  : String?
-    @NSManaged var pin      : Pin?
+    @NSManaged var pin      : Pin!
     
     var delegate            : PhotoImageLoadedDelegate?
     
@@ -43,6 +43,9 @@ class Photo : NSManagedObject {
             if newValue != nil {
                 FlickrAPI.Caches.imageCache.storeImage(newValue, withIdentifier: imageID!)
                 print("[Photo image]: image loaded")
+                if delegate == nil {
+                    print("Delegate = nil, should only happen if PhotoAlbumVC isn't avilable.")
+                }
                 delegate?.imageLoaded(fromURL: imageID)
             } else {
                 delegate?.imageRemoved()

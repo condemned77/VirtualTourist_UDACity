@@ -26,16 +26,14 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     var deletedIndexPaths   : [NSIndexPath]!
     var updatedIndexPaths   : [NSIndexPath]!
     var movedIndexPaths     : [NSIndexPath : NSIndexPath]!
-    
 
     var pin : Pin!
     var mapViewRegion : MKCoordinateRegion?
     var sharedContext = CoreDataStackManager.sharedInstance().managedObjectContext
     
-    
     lazy var fetchedResultsController : NSFetchedResultsController = {
         let fetchreq = NSFetchRequest(entityName: "Photo")
-        fetchreq.sortDescriptors = [NSSortDescriptor(key: "imageURL", ascending: true)]
+        fetchreq.sortDescriptors = []//NSSortDescriptor(key: "imageURL", ascending: true)]
         fetchreq.predicate = NSPredicate(format: "pin==%@", self.pin)
         
         let ctrl = NSFetchedResultsController(fetchRequest: fetchreq, managedObjectContext: self.sharedContext, sectionNameKeyPath: nil, cacheName: nil)
@@ -250,6 +248,7 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     internal func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         print("[collectionView cellForItemAtIndexPath] IsMainThread: \(NSThread.isMainThread())")
         let cell : PhotoCell = collectionView.dequeueReusableCellWithReuseIdentifier("PhotoCell", forIndexPath: indexPath) as! PhotoCell
+
         configureCell(cell, atIndexPath: indexPath)
         cell.backgroundColor = UIColor.redColor()
         return cell
@@ -261,8 +260,9 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     delete it by pressing a button at the bottom of the view, which will be activated as soon
     as any cell is touched. This button will be activated by calling the method toggleBottomButtonTitle*/
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+        guard amountOfPhotos != 0 else {print("No photo instances available, don't mark cells."); return}
         let cell = collectionView.cellForItemAtIndexPath(indexPath) as! PhotoCell
-        print("[PhotoAlbumVC didSelectItem]: imagesize: \(cell.imageView.image?.size), cell size: \(cell.frame.size) with url: \(cell.photo?.imageURL) IsMainThread: \(NSThread.isMainThread())")
+        print("[PhotoAlbumVC didSelectItem]: imagesize: \(cell.imageView.image?.size), cell size: \(cell.frame.size) with url: \(cell.photo?.imageURL) on position: \(indexPath.row) IsMainThread: \(NSThread.isMainThread())")
         
         // Whenever a cell is tapped we will toggle its presence in the selectedIndexes array
         if let index = selectedIndexes.indexOf(indexPath) {
@@ -300,15 +300,20 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     func configureCell(cell : PhotoCell, atIndexPath indexPath : NSIndexPath) {
         print("[PhotoAlbumViewController configureCell] IsMainThread: \(NSThread.isMainThread())")
         print("amount of photos: \(amountOfPhotos), requested row: \(indexPath.row)")
+        guard indexPath.row < amountOfPhotos else {print("requested row: \(indexPath.row) has to be smaller than \(amountOfPhotos)"); return}
         if amountOfPhotos == 0 {
             print("No photo instances available yet.");
             self.toggleNoPhotosLabel();
             return
-        } else if indexPath.row <= amountOfPhotos {
-            if cell.photo == nil {
+        } else {
+//            if cell.photo == nil {
                 let photo = fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
                 cell.photo = photo
-            }
+//            } else {
+//                let photo = fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
+//                print("PhotoCell has already a photo instance assigned. This instance should be equal to: \(photo)")
+//                print("photo of cell: \(cell.photo), supposingly the same photo instance: \(photo)===> the same? \(cell.photo == photo)")
+            //}
             if let _ = selectedIndexes.indexOf(indexPath) {
                 cell.alpha = 0.30
             } else {
@@ -325,21 +330,14 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     }
     
     
-    
     func newPhotoInstanceAvailable(photoInstance : Photo) {
         print("[PhotoAlbumViewController newPhotoInstanceAvailable]: IsMainThread: \(NSThread.isMainThread())")
-        for photoCell in collectionView.visibleCells() {
-            let castedCell = photoCell as! PhotoCell
-            if castedCell.photo == nil {
-                castedCell.photo = photoInstance
-                let indexPath = collectionView.indexPathForCell(castedCell)
-                configureCell(castedCell, atIndexPath: indexPath!)
-            }
-        }
+        let indexPath = fetchedResultsController.indexPathForObject(photoInstance)
+        let associatedCell = collectionView.cellForItemAtIndexPath(indexPath!) as! PhotoCell
+        configureCell(associatedCell, atIndexPath: indexPath!)
     }
     
     
-
     //MARK: NSFetchedResultsControllerDelegate method implementation
     //Callback method of NSFetchedResultsControllerDelegate
     func controllerWillChangeContent(controller: NSFetchedResultsController) {
@@ -369,15 +367,6 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
                 self.collectionView.reloadItemsAtIndexPaths([indexPath])
             }
 
-            //don't give a fuck about moving?!
-            for (oldIndexPath, newIndexPath) in self.movedIndexPaths {
-                let photo2BeMoved = controller.objectAtIndexPath(oldIndexPath) as! Photo
-                let photoCell2BeUpdated : PhotoCell? = self.collectionView.cellForItemAtIndexPath(newIndexPath) as? PhotoCell
-                if photoCell2BeUpdated != nil {
-                    photoCell2BeUpdated!.photo = photo2BeMoved
-                }
-            }
-            
             CoreDataStackManager.sharedInstance().saveContext()
             }, completion: nil)
     }

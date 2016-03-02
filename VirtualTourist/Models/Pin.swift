@@ -120,6 +120,12 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
     }
     
     
+    /*Callback method for notifying if downloading the image URLs has failed.
+    Resets the instance variable currentlyFetchingPhotoURLs. */
+    func errorWhileDownloading() {
+        currentlyFetchingPhotoURLs = false
+    }
+    
     /*Callback for setting the amount of pages available for a flickr API request.
     This argument is also returned by the flickr API when requesting new images.*/
     func setPageAmountOfLastRequest(pages : Int, currentPage : Int) {
@@ -161,8 +167,9 @@ class Pin : NSManagedObject, ImageURLDownloadedDelegate{
             photo.imageID = photoID
             photo.startLoadingPhotoURL()
             self.photos.addObject(photo)
-            self.delegate?.newPhotoInstanceAvailable(photo)
             CoreDataStackManager.sharedInstance().saveContext()
+            self.delegate?.newPhotoInstanceAvailable(photo)
+
         })
     }
     

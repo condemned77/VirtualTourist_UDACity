@@ -15,6 +15,7 @@ class PhotoCell : UICollectionViewCell, PhotoImageLoadedDelegate {
         didSet  {
             if let unwrappedPhoto = photo {
                 unwrappedPhoto.delegate = self
+                print("\(unwrappedPhoto) delegate set to self: \(self)")
                 if let _ = photo?.image {
                     showImageOfPhotoInstance()
                 }

@@ -12,6 +12,7 @@ import MapKit
 protocol ImageURLDownloadedDelegate {
     func newImageURLDownloaded(urlString : String, withPhotoID: String)
     func setPageAmountOfLastRequest(pages : Int, currentPage : Int)
+    func errorWhileDownloading()
 }
 
 class FlickrAPI: NSObject {
@@ -112,6 +113,7 @@ class FlickrAPI: NSObject {
             // if an error occurs, print it and re-enable the UI
             func displayError(error: String) {
                 print(error)
+                self.delegate?.errorWhileDownloading()
             }
             
             /* GUARD: Was there an error? */
