@@ -163,11 +163,12 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
         for indexPath in selectedIndexes {
             photosToDelete.append(fetchedResultsController.objectAtIndexPath(indexPath) as! Photo)
         }
-        
-        for photo in photosToDelete {
-            sharedContext.deleteObject(photo)
+        sharedContext.performBlockAndWait() {
+            for photo in photosToDelete {
+                self.sharedContext.deleteObject(photo)
+            }
+            CoreDataStackManager.sharedInstance().saveContext()
         }
-        CoreDataStackManager.sharedInstance().saveContext()
         selectedIndexes = [NSIndexPath]()
         toggleBottomButtonTitle()
     }
@@ -240,7 +241,8 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     internal func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("[PhotoAlbumViewController collectionView numbersOfItemsInSection] IsMainThread: \(NSThread.isMainThread())")
         if amountOfPhotos > 0 {toggleNoPhotosLabel()}
-        return Constants.maxAmountOfPhotos
+//        return Constants.maxAmountOfPhotos
+        return self.pin!.photos.count
     }
     
     
@@ -390,7 +392,9 @@ class PhotoAlbumViewController : UIViewController, UICollectionViewDataSource, U
     
     //Callback method of NSFetchedResultsControllerDelegate
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+        dispatch_async(dispatch_get_main_queue()) {
         print("didChangeObject: \(anObject) atIndexPath: \(indexPath) forChangeType: \(type.rawValue) newIndexPath: \(newIndexPath). IsMainThread: \(NSThread.isMainThread())")
+        }
         
         switch type {
         case .Insert:
