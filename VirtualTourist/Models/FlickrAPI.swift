@@ -93,8 +93,10 @@ class FlickrAPI: NSObject {
             methodParameters[FlickrConstants.FlickrParameterKeys.Page] = String(pageNum)
         }
 
-        
-        dispatch_async(dispatch_get_main_queue()) {
+        let qualityOfServiceClass = QOS_CLASS_BACKGROUND
+        let backgroundQueue = dispatch_get_global_queue(qualityOfServiceClass, 0)
+        dispatch_async(backgroundQueue) {
+            print("This is run on the background queue")
             self.downloadImageData(withParameter: methodParameters, withCompletionHandler : completionHandler)
         }
     }
