@@ -90,11 +90,11 @@
                   moduleName = "VirtualTourist"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/J/Library/Mobile%20Documents/com~apple~CloudDocs/UDACity_Projects/Part_4/Virtual%20Tourist%20App/VirtualTourist/VirtualTourist/PhotoAlbumViewController.swift"
-                  timestampString = "478620647.940426"
+                  timestampString = "478868136.93813"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "333"
-                  endingLineNumber = "333"
+                  startingLineNumber = "336"
+                  endingLineNumber = "336"
                   offsetFromSymbolStart = "26">
                </Location>
                <Location
@@ -105,11 +105,11 @@
                   moduleName = "VirtualTourist"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/J/Library/Mobile%20Documents/com~apple~CloudDocs/UDACity_Projects/Part_4/Virtual%20Tourist%20App/VirtualTourist/VirtualTourist/PhotoAlbumViewController.swift"
-                  timestampString = "478620647.940596"
+                  timestampString = "478868136.938282"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "332"
-                  endingLineNumber = "332"
+                  startingLineNumber = "335"
+                  endingLineNumber = "335"
                   offsetFromSymbolStart = "4">
                </Location>
             </Locations>
@@ -121,30 +121,14 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "VirtualTourist/PhotoAlbumViewController.swift"
-            timestampString = "478620472.974147"
+            filePath = "VirtualTourist/Models/FlickrAPI.swift"
+            timestampString = "478866003.853237"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "249"
-            endingLineNumber = "249"
-            landmarkName = "PhotoAlbumViewController"
-            landmarkType = "3">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "VirtualTourist/PhotoAlbumViewController.swift"
-            timestampString = "478620478.014266"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "301"
-            endingLineNumber = "301"
-            landmarkName = "PhotoAlbumViewController"
-            landmarkType = "3">
+            startingLineNumber = "173"
+            endingLineNumber = "173"
+            landmarkName = "downloadImageData(withParameter:withCompletionHandler:)"
+            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

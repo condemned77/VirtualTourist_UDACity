@@ -67,11 +67,16 @@ class Photo : NSManagedObject {
             delegate?.imageLoaded(fromURL: imageURL)
             return
         }
-        let potentiallyDownloadedData : NSData? = NSData(contentsOfURL: NSURL(string: imageURL!)!)
-        if let downloadedData = potentiallyDownloadedData {
-            dispatch_async(dispatch_get_main_queue()) {
+        let qualityOfServiceClass = QOS_CLASS_BACKGROUND
+        let backgroundQueue = dispatch_get_global_queue(qualityOfServiceClass, 0)
+        let urlCopyForAvoidingCoreDataAccess = self.imageURL!
+        dispatch_async(backgroundQueue) {
+            let potentiallyDownloadedData : NSData? = NSData(contentsOfURL: NSURL(string: urlCopyForAvoidingCoreDataAccess)!)
+            if let downloadedData = potentiallyDownloadedData {
                 let imageFromData = UIImage(data: downloadedData)
-                self.image = imageFromData
+                dispatch_async(dispatch_get_main_queue()) {
+                    self.image = imageFromData
+                }
             }
         }
     }
